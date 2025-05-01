@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "server": "sls offline",
-    "dev": "nodemon -e js,ts,jsx,tsx -x npm run serve"
+    "dev": "nodemon -e js,ts,jsx,tsx -x npm run server"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +24,7 @@
     "@middy/core": "^6.0.0",
     "@middy/http-error-handler": "^6.0.0",
     "@middy/http-json-body-parser": "^3.4.0",
-    "middy": "^0.36.0"
+    "middy": "^0.36.0",
+    "path": "^0.12.7"
   }
 }
