@@ -5,8 +5,7 @@ import { APIGatewayEvent, APIGatewayProxyHandler } from "aws-lambda";
 const testFunctionHandler: APIGatewayProxyHandler = async (event: APIGatewayEvent) =>{
   return formatJSONResponse({
     statusCode: 200,
-    data: {message: "Hello This is my First Function"},
-    message: "hello HIi"
+    data: {message: "Hello This is my First Function"}
   });
 };
 

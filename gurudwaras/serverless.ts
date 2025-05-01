@@ -11,9 +11,10 @@ const serverlessConfiguration: AWS = {
   provider: {
     name: "aws",
     runtime: "nodejs20.x",
+    profile: "aamir"
   },
 
- functions
+  functions
 
   // custom: {
   //   esbuild: {
