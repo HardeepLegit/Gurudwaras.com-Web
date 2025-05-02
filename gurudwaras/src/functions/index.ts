@@ -1,9 +1,8 @@
-import adminTest from "./admin/admin-test";
 import testFunc from "./users/test-func";
+import uploadGurduwara from "./users/upload-gurduwara";
 import user_details from "./users/user_details";
-console.log("Exporting functions:", { testFunc, adminTest, user_details });
 export default {
     testFunc,
-    adminTest,
-    user_details
+    user_details,
+    uploadGurduwara
 }
