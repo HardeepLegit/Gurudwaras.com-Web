@@ -1,10 +1,11 @@
 import { formatJSONResponse } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
+import { ScanCommand } from "@aws-sdk/client-dynamodb";
 import { APIGatewayEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { v4 as uuidv4 } from "uuid";
 
-const dynamodb = new DynamoDBClient({region: 'eu-north-1'});
+const dynamodb = new DynamoDBClient({ region: 'eu-north-1' });
 const GurduwaraList = process.env.GURDUWARA_LIST_DB;
 
 const uploadFunctionHandler: APIGatewayProxyHandler = async (event: APIGatewayEvent) => {
@@ -65,11 +66,32 @@ const uploadFunctionHandler: APIGatewayProxyHandler = async (event: APIGatewayEv
       },
     };
 
+    const duplicateCheck = await dynamodb.send(new ScanCommand({
+      TableName: GurduwaraList,
+      FilterExpression: "#name = :name AND #address = :address",
+      ExpressionAttributeNames: {
+        "#name": "name",
+        "#address": "gurduwara_address",
+      },
+      ExpressionAttributeValues: {
+        ":name": { S: name },
+        ":address": { S: gurduwara_address },
+      },
+    }));
+
+    if (duplicateCheck.Count && duplicateCheck.Count > 0) {
+      return formatJSONResponse({
+        statusCode: 409,
+        message: "You have already uploaded this Gurduwara.",
+      });
+    }
+
     await dynamodb.send(new PutItemCommand(params));
 
     return formatJSONResponse({
       statusCode: 200,
-      message :"Uploaded"
+      message: "Uploaded",
+      success: true,
     });
   } catch (error) {
     console.error("Upload Error:", error);

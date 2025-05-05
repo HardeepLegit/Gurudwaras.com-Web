@@ -14,6 +14,12 @@ const serverlessConfiguration: AWS = {
     name: "aws",
     runtime: "nodejs20.x",
     profile: "aamir",
+    stage:  "${opt:stage, 'dev'}",
+    region: "eu-north-1",
+    apiGateway: {
+      minimumCompressionSize: 1024,
+      shouldStartNameWithService: true,
+    },
     environment: {
       GURDUWARA_LIST_DB: 'Gurduwara_List'
     },
