@@ -5,7 +5,7 @@ export default {
     events:[
         {
             http: {
-                method: "GET",
+                method: "POST",
                 path: "user/details",
                 cors: true,
             },
