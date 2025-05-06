@@ -1,15 +1,13 @@
 import { handlerPath } from "@libs/handler-resolver";
 export default {
     handler: `${handlerPath(__dirname)}/handler.main`,
-    timeout: 10,
-    events:[
+    events: [
         {
             http: {
-                method: 'patch',
-                path: 'update-gurduwara',
+                method: 'post',
+                path: 'gurduwara',
                 cors: true,
             }
         }
-            
     ]
 }

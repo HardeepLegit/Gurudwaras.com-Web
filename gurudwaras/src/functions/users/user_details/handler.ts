@@ -14,6 +14,7 @@ const testFunctionHandler: APIGatewayProxyHandler = async (event: APIGatewayEven
     const body = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
     const { email } = body;
     console.log("Email: ", email);
+    console.log("Event %j",event);
     const listUsersCommand = new ListUsersCommand({
         UserPoolId,
         Filter: `email = "${email}"`,
