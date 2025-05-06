@@ -52,6 +52,7 @@ const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => 
         return formatJSONResponse({
             statusCode: 200,
             data: result,
+            success: true,
             message: "Guruduwar Updated Succesfully"
         })
     } catch (error) {

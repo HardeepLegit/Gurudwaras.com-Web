@@ -11,9 +11,11 @@ const fetchGurduwaraList: APIGatewayProxyHandler = async (event: APIGatewayEvent
             TableName: GurduwaraList, 
         }
         const data = await dynamodb.send(new ScanCommand(params));
+        // console.log("Data", data);
         return formatJSONResponse({
             statusCode: 200,
-            data: data,
+            data: data.Items,
+            success: true,
             message: "Gurduwar Fetched Succesfully",
         })
     } catch (error) {
