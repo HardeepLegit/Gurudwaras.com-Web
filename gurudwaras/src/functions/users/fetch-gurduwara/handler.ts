@@ -1,8 +1,10 @@
 import { formatJSONResponse } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
 import { APIGatewayEvent, APIGatewayProxyHandler } from "aws-lambda";
-import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
-const dynamodb = new DynamoDBClient({region: 'eu-north-1'});
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { ScanCommand,DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+const client = new DynamoDBClient({region: 'eu-north-1'});
+const dynamodb = DynamoDBDocumentClient.from(client);
 const GurduwaraList = process.env.GURDUWARA_LIST_DB;
 
 const fetchGurduwaraList: APIGatewayProxyHandler = async (event: APIGatewayEvent) => {
@@ -16,7 +18,7 @@ const fetchGurduwaraList: APIGatewayProxyHandler = async (event: APIGatewayEvent
             statusCode: 200,
             data: data.Items,
             success: true,
-            message: "Gurduwar Fetched Succesfully",
+            message: "Gurduwara Fetched Succesfully",
         })
     } catch (error) {
         return formatJSONResponse({

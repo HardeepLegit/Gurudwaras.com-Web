@@ -42,17 +42,6 @@ const serverlessConfiguration: AWS = {
   },
 
   functions
-
-  // custom: {
-  //   esbuild: {
-  //     bundle: true,
-  //     minify: false,
-  //     sourcemap: true,
-  //     target: "node20",
-  //     platform: "node",
-  //     external: ["aws-sdk"],
-  //   },
-  // },
 };
 
 module.exports = serverlessConfiguration;

@@ -12,7 +12,7 @@ export const formatJSONResponse = async (response: Body, event = null) => {
     body: JSON.stringify({
         message: response.message,
         statusCode: response.statusCode,
-        success: response.success || false,
+        success: response.success,
         data : response.data
     }),
     headers: {

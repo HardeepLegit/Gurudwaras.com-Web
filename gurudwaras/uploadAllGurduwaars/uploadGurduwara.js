@@ -7,7 +7,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 const client = new DynamoDBClient({ region: "eu-north-1" });
-const ddbDocClient = DynamoDBDocumentClient.from(client);
+const dynamodb = DynamoDBDocumentClient.from(client);
 
 // Load the JSON file
 const rawData = fs.readFileSync("gurudwaras.json");
@@ -41,7 +41,7 @@ async function uploadData() {
     };
 
     try {
-      await ddbDocClient.send(new PutCommand(params));
+      await dynamodb.send(new PutCommand(params));
       console.log(`✅ Uploaded: ${item.name}`);
     } catch (err) {
       console.error(`❌ Error uploading ${item.name}:`, err);
