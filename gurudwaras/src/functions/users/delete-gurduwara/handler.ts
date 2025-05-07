@@ -11,7 +11,8 @@ const deleteGurduwaraById: APIGatewayProxyHandler = async (event: APIGatewayEven
             TableName: GurduwaraList,
             Key: {
                 id: {S: id}
-            }
+            },
+            ReturnValues: "ALL_OLD"
         }
         console.log("Params ---",params);
         const command = new DeleteItemCommand(params);
