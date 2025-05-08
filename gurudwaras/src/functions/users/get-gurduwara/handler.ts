@@ -20,6 +20,7 @@ const getGurduwaraById: APIGatewayProxyHandler = async (event: APIGatewayEvent) 
         return formatJSONResponse({
             statusCode: 200,
             data: result,
+            success: true,
             message: "Gurduwara Fetched Succesfully"
         });
     } catch (error) {

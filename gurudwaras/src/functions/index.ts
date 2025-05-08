@@ -4,6 +4,8 @@ import user_details from "./users/user_details";
 import updateGurduwara from "./users/update-gurduwara";
 import getGurduwara from "./users/get-gurduwara";
 import deleteGurduwaraById from "./users/delete-gurduwara";
+import addEventGurduwara from "./users/add-event";
+import getEvents from "./users/get-events";
 export default {
     user_details,
     uploadGurduwara,
@@ -11,4 +13,6 @@ export default {
     updateGurduwara,
     getGurduwara,
     deleteGurduwaraById,
+    addEventGurduwara,
+    getEvents
 }

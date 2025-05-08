@@ -6,7 +6,7 @@ interface Body{
 }
 
 export const formatJSONResponse = async (response: Body, event = null) => {
-
+  
   return {
     statusCode: response.statusCode,
     body: JSON.stringify({

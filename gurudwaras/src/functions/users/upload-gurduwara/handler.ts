@@ -86,12 +86,12 @@ const uploadFunctionHandler: APIGatewayProxyHandler = async (event: APIGatewayEv
       });
     }
 
-    await dynamodb.send(new PutItemCommand(params));
-
+   await dynamodb.send(new PutItemCommand(params));
     return formatJSONResponse({
       statusCode: 200,
       message: "Uploaded",
       success: true,
+      data: params.Item,
     });
   } catch (error) {
     console.error("Upload Error:", error);
