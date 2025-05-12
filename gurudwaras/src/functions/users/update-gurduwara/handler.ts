@@ -1,8 +1,11 @@
 import { APIGatewayEvent,APIGatewayProxyHandler } from 'aws-lambda';
 import { middyfy } from '@libs/lambda';
-import { DynamoDB } from 'aws-sdk';
+import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { formatJSONResponse } from "@libs/api-gateway";
-const dynamoDb = new DynamoDB.DocumentClient();
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+const client = new DynamoDBClient({region: 'eu-north-1'});
+const dynamodb = DynamoDBDocumentClient.from(client);
+
 const GurduwaraList = process.env.GURDUWARA_LIST_DB;
 const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => {
     try {
@@ -47,7 +50,7 @@ const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => 
             ReturnValues: "UPDATED_NEW"
         }
         console.log("Params -",params);
-        const result = await dynamoDb.update(params).promise();
+        const result = await dynamodb.send(new UpdateCommand(params));
         console.log("Result- ",result);
         return formatJSONResponse({
             statusCode: 200,
