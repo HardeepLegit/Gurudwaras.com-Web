@@ -5,8 +5,8 @@
   "main": "handler.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "server": "sls offline",
-    "dev": "nodemon -e js,ts,jsx,tsx -x npm run server"
+    "server": "sls offline ",
+    "dev": "nodemon -e js,ts,jsx,tsx -x npm run server "
   },
   "keywords": [],
   "author": "",
@@ -27,11 +27,14 @@
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.803.0",
     "@aws-sdk/client-dynamodb": "^3.799.0",
+    "@aws-sdk/client-s3": "^3.842.0",
     "@aws-sdk/lib-dynamodb": "^3.799.0",
     "@middy/core": "^6.0.0",
     "@middy/http-error-handler": "^6.0.0",
     "@middy/http-json-body-parser": "^3.4.0",
+    "file-type": "^21.0.0",
     "middy": "^0.36.0",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "zod": "^3.25.67"
   }
 }

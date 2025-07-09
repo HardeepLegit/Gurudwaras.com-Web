@@ -4,8 +4,8 @@ export default {
     events: [
         {
             http: {
-                method: 'post',
-                path: 'gurduwara',
+                method: 'get',
+                path: 'gurduwara/{id}',
                 cors: true,
             }
         }

@@ -1,0 +1,267 @@
+import { z } from "zod";
+
+export const GurudwaraSchema = z.object({
+  id: z.string(), // assuming it's a string ID
+  name: z.object({
+    pun: z.string().optional(),
+    eng: z.string().optional(),
+    hin: z.string().optional(),
+  })
+  .refine(
+    (val) => !!val.pun || !!val.eng || !!val.hin,
+    {
+      message: "At least one name (pun, eng, or hin) must be provided.",
+    }
+  ),
+  phoneLandline: z.string().optional(),
+  phoneMobile: z.string(),
+  createdDate: z.string(),
+  updatedDate: z.string(),
+  emailId: z.string().email().optional(),
+  website: z.string().url().optional(),
+  accommodationAvailable: z.boolean().optional(),
+  addedGurudwaras: z.array(z.string()).optional(), // assuming array of IDs/names
+  pictures: z.array(z.string()).optional(), // assuming array of image URLs
+  additionalInfo: z.object({
+    pun: z.string().optional(),
+    eng: z.string().optional(),
+    hin: z.string().optional(),
+  }),
+  registrationNumber: z.string().optional(),
+  latitude: z.string(),
+  longitude: z.string(),
+  addedByUserId: z.string(),
+  approvedByAdmin: z.boolean().default(false),
+  upcomingEvents: z.array(z.string()).optional(), // assuming array of event IDs/names
+  address: z.object({
+    pun: z.string().optional(),
+    eng: z.string().optional(),
+    hin: z.string().optional(),
+  })
+  .refine(
+    (val) => !!val.pun || !!val.eng || !!val.hin,
+    {
+      message: "At least one name (pun, eng, or hin) must be provided.",
+    }
+  ),
+  city: z.object({
+    pun: z.string().optional(),
+    eng: z.string().optional(),
+    hin: z.string().optional(),
+  })
+  .refine(
+    (val) => !!val.pun || !!val.eng || !!val.hin,
+    {
+      message: "At least one name (pun, eng, or hin) must be provided.",
+    }
+  ),
+  state: z.object({
+    pun: z.string().optional(),
+    eng: z.string().optional(),
+    hin: z.string().optional(),
+  })
+  .refine(
+    (val) => !!val.pun || !!val.eng || !!val.hin,
+    {
+      message: "At least one name (pun, eng, or hin) must be provided.",
+    }
+  ),
+  postalCode: z.string().optional(),
+  country: z.object({
+    pun: z.string().optional(),
+    eng: z.string().optional(),
+    hin: z.string().optional(),
+  })
+  .refine(
+    (val) => !!val.pun || !!val.eng || !!val.hin,
+    {
+      message: "At least one name (pun, eng, or hin) must be provided.",
+    }
+  ),
+  additionalDate: z.string().refine(
+    (val) => /^\d{2}-\d{2}-\d{4}$/.test(val),
+    { message: "Must be in DD-MM-YYYY format" }
+  ),
+  facilitiesAndServices: z.object({
+    accommodationAvailable: z.boolean().optional(),
+    langarAvailable: z.boolean().optional(),
+    parkingAvailable: z.boolean().optional(),
+  }),
+
+  learningAndEducation: z.object({
+    gurmatClasses: z.boolean().optional(),
+    keertanClasses: z.boolean().optional(),
+    sikhMartialArtsClasses: z.boolean().optional(),
+    gurbaniSanthyaClasses: z.boolean().optional(),
+  }),
+
+  medicalFacilities: z.object({
+    labFacilities: z.boolean().optional(),
+    doctorAvailable: z.boolean().optional(),
+    medicosAvailable: z.boolean().optional(),
+  }),
+  status: z.enum(["ONHOLD","PENDING","REJECTED","APPROVED"]).default("PENDING"),
+});
+export const GurudwaraSchemaUser = z.object({
+  id: z.string(), // assuming it's a string ID
+  name: z.string().optional(),
+  phoneLandline: z.string().optional(),
+  phoneMobile: z.string(),
+  createdDate: z.string().optional().default(() => new Date().toISOString()),
+  updatedDate: z.string().optional().default(() => new Date().toISOString()),
+  emailId: z.string().email().optional(),
+  website: z.string().url().optional(),
+  accommodationAvailable: z.boolean().optional(),
+  addedGurudwaras: z.array(z.string()).optional(), // assuming array of IDs/names
+  pictures: z.array(z.string()).optional(), // assuming array of image URLs
+  additionalInfo: z.string().optional(),
+  registrationNumber: z.string().optional(),
+  latitude: z.string(),
+  longitude: z.string(),
+  addedByUserId: z.string(),
+  approvedByAdmin: z.boolean().default(false),
+  upcomingEvents: z.array(z.object({})).optional(), // assuming array of event IDs/names
+  address: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  postalCode: z.string().optional(),
+  country: z.string().optional(),
+  additionalDate: z.string().refine(
+    (val) => /^\d{2}-\d{2}-\d{4}$/.test(val),
+    { message: "Must be in DD-MM-YYYY format" }
+  ),
+  facilitiesAndServices: z.object({
+    accommodationAvailable: z.boolean().optional(),
+    langarAvailable: z.boolean().optional(),
+    parkingAvailable: z.boolean().optional(),
+  }),
+
+  learningAndEducation: z.object({
+    gurmatClasses: z.boolean().optional(),
+    keertanClasses: z.boolean().optional(),
+    sikhMartialArtsClasses: z.boolean().optional(),
+    gurbaniSanthyaClasses: z.boolean().optional(),
+  }),
+
+  medicalFacilities: z.object({
+    labFacilities: z.boolean().optional(),
+    doctorAvailable: z.boolean().optional(),
+    medicosAvailable: z.boolean().optional(),
+  }),
+  status: z.enum(["ONHOLD","PENDING","REJECTED","APPROVED"]).default("PENDING"),
+});
+
+
+export const eventSchema = z.object({
+  id: z.string(), // Optional for new events, required for updates
+  Title: z
+    .string()
+    .min(1, "Event Title is required")
+    .max(200, "Event Title is too long"),
+
+  gurudwaraId: z
+    .string()
+    .optional(),
+  createdDate: z.string().optional().default(() => new Date().toISOString()),
+  updatedDate: z.string().optional().default(() => new Date().toISOString()),
+  startDate: z
+    .string()
+    .min(1, "Start date is required")
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Start Date must be in YYYY-MM-DD format"),
+
+  endDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "End Date must be in YYYY-MM-DD format")
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+
+  startTime: z
+    .string()
+    .min(1, "Start time is required"),
+
+  endTime: z.string().optional(),
+  addedByUserId: z.string().min(1, "User ID is required"),
+  eventDescription: z
+    .string()
+    .min(1, "Event description is required"),
+
+  additionalInformation: z.string().optional(),
+
+  youtubeLink: z
+    .string()
+    .url("Invalid YouTube link")
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+
+  additionalVideoUrls: z
+    .array(z.string().url("Each video URL must be valid"))
+    .optional(),
+
+  contactPersons: z
+    .array(z.string().min(1, "Contact person name cannot be empty"))
+    .optional(),
+
+  personalities: z
+    .array(z.object({
+  name: z.string().min(1, "Personality name is required"),
+  phoneNumber: z
+    .string()
+    .regex(/^\+?[0-9\s\-()]{7,}$/, "Invalid phone number")
+    .optional(),
+
+  website: z
+    .string()
+    .url("Invalid website URL")
+    .optional(),
+
+  facebook: z
+    .string()
+    .url("Invalid Facebook URL")
+    .optional(),
+
+  twitter: z
+    .string()
+    .url("Invalid Twitter URL")
+    .optional(),
+
+  instagram: z
+    .string()
+    .url("Invalid Instagram URL")
+    .optional(),
+
+  linkedin: z
+    .string()
+    .url("Invalid LinkedIn URL")
+    .optional()
+})
+).optional(),
+  status: z.enum(["ONHOLD","PENDING","REJECTED","APPROVED"]).default("PENDING"),
+  bannerImages: z
+    .array(z.string()) // You may use File/Blob if you're validating before upload
+    .optional()
+});
+
+
+export const profileSchema = z.object({
+  id: z.string(), 
+  email: z.string().email(),  // Required and must be a valid email
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  address: z.string().optional(),
+  city: z.string().optional(),
+  stateProvinceZip: z.string().optional(), // You can split into `state` and `zip` if needed
+  countryCode: z.string().optional(), // Optional, default might be +1
+  phoneNumber: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^\d{7,15}$/.test(val), {
+      message: "Invalid phone number",
+    }),
+  // This field can help in managing if email/phone is verified
+  isEmailVerified: z.boolean().optional(),
+  isPhoneVerified: z.boolean().optional(),
+
+  // Optional timestamps
+  createdDate: z.string().optional().default(() => new Date().toISOString()),
+  updatedDate: z.string().optional().default(() => new Date().toISOString()),
+});

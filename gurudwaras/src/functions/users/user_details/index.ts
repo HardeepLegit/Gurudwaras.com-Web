@@ -6,9 +6,13 @@ export default {
         {
             http: {
                 method: "POST",
-                path: "user/details",
+                path: "user",
                 cors: true,
+                authorizer: {
+                    arn: process.env.COGNITO_AUTHORIZER_ARN,
+                }
             },
+            
         },
     ]
 }

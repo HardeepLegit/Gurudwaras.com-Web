@@ -6,13 +6,20 @@ import getGurduwara from "./users/get-gurduwara";
 import deleteGurduwaraById from "./users/delete-gurduwara";
 import addEventGurduwara from "./users/add-event";
 import getEvents from "./users/get-events";
+import  gurudwaraStatus from "./admin/gurudwara-status";
+import adminUpdateEventStatus from "./admin/event-status";
+import uploadImage from "./users/upload-image";
+
 export default {
     user_details,
     uploadGurduwara,
     fetchGurduwara,
     updateGurduwara,
     getGurduwara,
-    deleteGurduwaraById,
+    // deleteGurduwaraById,
     addEventGurduwara,
-    getEvents
+    getEvents,
+    gurudwaraStatus,
+    adminUpdateEventStatus,
+    uploadImage,
 }

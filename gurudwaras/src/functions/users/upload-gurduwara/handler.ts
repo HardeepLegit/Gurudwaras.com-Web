@@ -1,105 +1,95 @@
-import { formatJSONResponse } from "@libs/api-gateway";
-import { middyfy } from "@libs/lambda";
-import { ScanCommand } from "@aws-sdk/client-dynamodb";
-import { APIGatewayEvent, APIGatewayProxyHandler } from "aws-lambda";
-import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
-import { v4 as uuidv4 } from "uuid";
+import { formatJSONResponse } from '@libs/api-gateway';
+import { middyfy } from '@libs/lambda';
+import { APIGatewayEvent, APIGatewayProxyHandler } from 'aws-lambda';
+import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
+import { marshall } from '@aws-sdk/util-dynamodb';
+import { v4 as uuidv4 } from 'uuid';
+// Update the import path and extension if necessary
+import { GurudwaraSchemaUser } from 'src/Schema/gurudwaras'; // Check that '../../../Schema/gurudwaras.ts' exists
+import uploadImagesToS3 from 'src/common/uploadImageToS3';
 
-const dynamodb = new DynamoDBClient({ region: 'eu-north-1' });
-const GurduwaraList = process.env.GURDUWARA_LIST_DB;
+const region = process.env.GURUDWARA_AWS_REGION;
+const GURUDWARA_TABLE = process.env.GURUDWARA_DB as string;
 
-const uploadFunctionHandler: APIGatewayProxyHandler = async (event: APIGatewayEvent) => {
+// ✅ Initialize DynamoDB client
+const dynamoClient = new DynamoDBClient({ region });
+
+// ✅ Marshall utility
+const toDynamoDBItem = (data: Record<string, unknown>) =>
+  marshall(data, {
+    removeUndefinedValues: true,
+    convertClassInstanceToMap: true,
+  });
+
+const uploadGurudwaraHandler: APIGatewayProxyHandler = async (event: APIGatewayEvent) => {
   try {
-    const body = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
+    // ✅ Parse body from API Gateway
+    const body = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
+    console.log('📥 Received Event Body:', JSON.stringify(body, null, 2));
+    // ✅ Add metadata
+    const gurudwaraId = uuidv4();
+    const timestamp = new Date().toISOString();
 
-    const {
-      name,
-      phoneLandline = "",
-      phoneMobile = "",
-      emailId = "",
-      website = "",
-      accommodationAvailable = false,
-      pictures = [],
-      additionalInfo = "",
-      latitude = "",
-      longitutde = "",
-      approvedByAdmin = false,
-      upcomingEvents = [],
-      gurduwara_address = "",
-    } = body;
-
-    if (!name || !gurduwara_address) {
-      return formatJSONResponse({
-        statusCode: 400,
-        message: "Please provide required fields: 'name' and 'address'.",
-      });
-    }
-
-    // const userId = event.requestContext?.authorizer?.claims?.sub || "unknown-user";
-
-    const id = uuidv4();
-    const createdAt = new Date().toISOString();
-
-    const params = {
-      TableName: GurduwaraList,
-      Item: {
-        id: { S: id },
-        name: { S: name },
-        phoneLandLine: { S: phoneLandline },
-        phoneMobile: { S: phoneMobile },
-        emailId: { S: emailId },
-        website: { S: website },
-        accommodationAvailable: { BOOL: Boolean(accommodationAvailable) },
-        pictures: {
-          L: Array.isArray(pictures) ? pictures.map((p) => ({ S: String(p) })) : [],
-        },
-        additionalInfo: { S: additionalInfo },
-        latitude: { S: latitude },
-        longitutde: { S: longitutde },
-        approvedByAdmin: { BOOL: Boolean(approvedByAdmin) },
-        addedByUserId: { S: id },
-        upcomingEvents: {
-          L: Array.isArray(upcomingEvents) ? upcomingEvents.map((e) => ({ S: String(e) })) : [],
-        },
-        gurduwara_address: { S: gurduwara_address },
-        createdAt: { S: createdAt },
-      },
+    const enrichedBody = {
+      ...body,
+      id: gurudwaraId,
+      createdDate: timestamp,
+      updatedDate: timestamp,
     };
 
-    const duplicateCheck = await dynamodb.send(new ScanCommand({
-      TableName: GurduwaraList,
-      FilterExpression: "#name = :name AND #address = :address",
-      ExpressionAttributeNames: {
-        "#name": "name",
-        "#address": "gurduwara_address",
-      },
-      ExpressionAttributeValues: {
-        ":name": { S: name },
-        ":address": { S: gurduwara_address },
-      },
-    }));
+    console.log('📥 Received Payload:', JSON.stringify(enrichedBody, null, 2));
 
-    if (duplicateCheck.Count && duplicateCheck.Count > 0) {
+    // ✅ Validate against Zod schema
+    const validation = GurudwaraSchemaUser.safeParse(enrichedBody);
+
+    if (!validation.success) {
+      console.error('❌ Validation Error:', validation.error.flatten());
       return formatJSONResponse({
-        statusCode: 409,
-        message: "You have already uploaded this Gurduwara.",
+        statusCode: 400,
+        message: 'Validation failed',
+        success: false,
+      });
+    }
+    const uploadResult = await uploadImagesToS3({
+      id: gurudwaraId,
+      images: validation.data.pictures,
+    });
+
+    if (!Array.isArray(uploadResult)) {
+      // If uploadImagesToS3 returns an error response, return it directly
+      return formatJSONResponse({
+        statusCode: uploadResult.statusCode || 500,
+        message: 'Image upload failed',
+        success: false,
       });
     }
 
-   await dynamodb.send(new PutItemCommand(params));
+    validation.data.pictures = uploadResult;
+    // ✅ Create DynamoDB PutItem command
+    const command = new PutItemCommand({
+      TableName: GURUDWARA_TABLE,
+      Item: toDynamoDBItem(validation.data),
+    });
+    console.log('📤 Uploading Gurudwara to DynamoDB:', JSON.stringify(validation.data, null, 2));
+    await dynamoClient.send(command);
+
+    console.log('✅ Gurudwara uploaded to DynamoDB:', validation.data.id);
+
     return formatJSONResponse({
       statusCode: 200,
-      message: "Uploaded",
+      message: 'Gurudwara uploaded successfully.',
       success: true,
-      data: params.Item,
+      data: {
+        id: validation.data.id,
+      },
     });
   } catch (error) {
-    console.error("Upload Error:", error);
+    console.error('❌ Upload Error:', error);
     return formatJSONResponse({
       statusCode: 500,
-      message: "Internal Server Error",
+      message: 'Internal Server Error',
     });
   }
 };
 
-export const main = middyfy(uploadFunctionHandler);
+export const main = middyfy(uploadGurudwaraHandler);

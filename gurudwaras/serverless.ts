@@ -4,7 +4,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const serverlessConfiguration: AWS = {
-  org: "organization123",
+  org: "gurudwaras123",
   app: "gurudwaras",
   service: "gurudwaras",
 
@@ -13,9 +13,9 @@ const serverlessConfiguration: AWS = {
   provider: {
     name: "aws",
     runtime: "nodejs20.x",
-    profile: "aamir",
+    profile: "default",
     stage:  "${opt:stage, 'dev'}",
-    region: "eu-north-1",
+    region: process.env.GURUDWARA_AWS_REGION as AWS["provider"]["region"],
     apiGateway: {
       minimumCompressionSize: 1024,
       shouldStartNameWithService: true,
@@ -32,16 +32,74 @@ const serverlessConfiguration: AWS = {
               "dynamodb:PutItem",
               "dynamodb:GetItem",
               "dynamodb:Query",
-              "dynamodb:Scan"
+              "dynamodb:Scan",
+              "dynamodb:UpdateItem"
             ],
             Resource: "arn:aws:dynamodb:eu-north-1:761018888283:table/gurduwara_list"
+          },{
+            Effect: "Allow",
+            Action: [
+              "dynamodb:PutItem",
+              "dynamodb:GetItem",
+              "dynamodb:Query",
+              "dynamodb:Scan",
+              "dynamodb:UpdateItem"
+            ],
+            Resource: "arn:aws:dynamodb:eu-north-1:761018888283:table/gurudwara_dev"
+          },{
+            Effect: "Allow",
+            Action: [
+              "dynamodb:PutItem",
+              "dynamodb:GetItem",
+              "dynamodb:Query",
+              "dynamodb:Scan",
+              "dynamodb:UpdateItem"
+            ],
+            Resource: [
+              "arn:aws:dynamodb:eu-north-1:761018888283:table/event_dev",
+              "arn:aws:dynamodb:eu-north-1:761018888283:table/event_dev/index/startDate-event-index"
+            ]
+          },
+          {
+            Effect: "Allow",
+            Action: [
+              "cognito-idp:*",
+            ],
+            Resource: process.env.COGNITO_AUTHORIZER_ARN
+          },
+          {
+            Effect: "Allow",
+            Action: [
+              "s3:PutObject",
+              "s3:GetObject",
+              "s3:DeleteObject"
+            ],
+            Resource: `arn:aws:s3:::${process.env.GURUDWARA_S3_BUCKET}/*`
           }
         ]
       }
     }
   },
 
-  functions
+  functions,
+  // resources: {
+  //   Resources: {
+  //     ApiGatewayAuthorizer: {
+  //       Type: "AWS::ApiGateway::Authorizer",    
+  //       Properties: {
+  //         Name: "Cognito",
+  //         Type: "COGNITO_USER_POOLS",
+  //         IdentitySource: "method.request.header.Authorization",
+  //         RestApiId: {
+  //           Ref: "ApiGatewayRestApi"
+  //         },
+  //         ProviderARNs: [
+  //           process.env.COGNITO_AUTHORIZER_ARN
+  //         ]
+  //       }
+  //     }
+  //   }
+  // },
 };
 
 module.exports = serverlessConfiguration;

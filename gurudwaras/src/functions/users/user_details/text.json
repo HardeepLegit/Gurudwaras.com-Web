@@ -1,0 +1,19 @@
+{"authorizer": {
+        "claims": {
+            "sub": "e0dc196c-1041-703a-03dc-f1f77e69eec4",
+            "email_verified": "true",
+            "iss": "https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_CEK8q2GHd",
+            "cognito:username": "e0dc196c-1041-703a-03dc-f1f77e69eec4",
+            "origin_jti": "16253a66-e081-40c3-9fac-7d7ebf85e7bf",
+            "aud": "30fvjtnaq22p31l2ups9nlq7d7",
+            "event_id": "f12b8027-f655-4324-abf8-8ec7fec85741",
+            "token_use": "id",
+            "auth_time": "1751966764",
+            "name": "Deepak Kumar",
+            "exp": "Tue Jul 08 11:26:58 UTC 2025",
+            "iat": "Tue Jul 08 10:26:58 UTC 2025",
+            "jti": "cf4f1db5-ac5f-4885-b54e-1720ce9ee859",
+            "email": "deepakkumar12071998@gmail.com"
+        }
+    }
+}

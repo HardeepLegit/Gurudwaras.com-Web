@@ -6,7 +6,7 @@ export default {
             http:
             {
                 method: "get",
-                path: "gurduwara/{gurduwara_id}/get-events",
+                path: "get-events",
                 cors:true,
             }
         }

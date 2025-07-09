@@ -6,7 +6,7 @@ export default {
         {
             http: {
                 method: 'get',
-                path: 'all-gurduwaras',
+                path: 'all-gurduwaras/{lang}',
                 cors: true,
             }
         }

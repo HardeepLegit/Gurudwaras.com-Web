@@ -6,7 +6,7 @@ export default {
             http:
             {
                 method: "post",
-                path: "gurduwara/{gurduwara_id}/add-event",
+                path: "user/add-event",
                 cors: true,
             }
         }
