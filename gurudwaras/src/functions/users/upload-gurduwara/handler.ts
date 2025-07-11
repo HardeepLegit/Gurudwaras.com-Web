@@ -1,13 +1,13 @@
 import { formatJSONResponse } from '@libs/api-gateway';
 import { middyfy } from '@libs/lambda';
 import { APIGatewayEvent, APIGatewayProxyHandler } from 'aws-lambda';
-import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
-import { marshall } from '@aws-sdk/util-dynamodb';
+import { DynamoDBClient, PutItemCommand, GetItemCommand } from '@aws-sdk/client-dynamodb';
+import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
 // Update the import path and extension if necessary
 import { GurudwaraSchemaUser } from 'src/Schema/gurudwaras'; // Check that '../../../Schema/gurudwaras.ts' exists
 import uploadImagesToS3 from 'src/common/uploadImageToS3';
-
+import { checkUserProfile } from 'src/middleware/userMiddleware';
 const region = process.env.GURUDWARA_AWS_REGION;
 const GURUDWARA_TABLE = process.env.GURUDWARA_DB as string;
 
@@ -25,16 +25,18 @@ const uploadGurudwaraHandler: APIGatewayProxyHandler = async (event: APIGatewayE
   try {
     // ✅ Parse body from API Gateway
     const body = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
-    console.log('📥 Received Event Body:', JSON.stringify(body, null, 2));
+    // Extract user info from requestContext authorizer (adjust as per your auth setup)
+    const user = event.requestContext.authorizer?.user;
+    console.log('📥 Received Event Body:', JSON.stringify(event, null, 2));
     // ✅ Add metadata
     const gurudwaraId = uuidv4();
     const timestamp = new Date().toISOString();
-
     const enrichedBody = {
       ...body,
       id: gurudwaraId,
       createdDate: timestamp,
       updatedDate: timestamp,
+      addedByUserId: user.id , // Use user ID from request context
     };
 
     console.log('📥 Received Payload:', JSON.stringify(enrichedBody, null, 2));
@@ -92,4 +94,4 @@ const uploadGurudwaraHandler: APIGatewayProxyHandler = async (event: APIGatewayE
   }
 };
 
-export const main = middyfy(uploadGurudwaraHandler);
+export const main = middyfy(uploadGurudwaraHandler).use(checkUserProfile());

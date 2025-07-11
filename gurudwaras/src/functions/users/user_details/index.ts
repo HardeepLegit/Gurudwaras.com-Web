@@ -9,6 +9,7 @@ export default {
                 path: "user",
                 cors: true,
                 authorizer: {
+                    name: "authorizer",
                     arn: process.env.COGNITO_AUTHORIZER_ARN,
                 }
             },

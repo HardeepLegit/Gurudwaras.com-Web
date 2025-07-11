@@ -9,11 +9,11 @@ export default {
                 method: 'post',
                 path: 'user/upload',
                 cors: true,
-                // authorizer: {
-                //     name: 'authorizer',
-                //     type: 'COGNITO_USER_POOLS',
-                //     arn: process.env.COGNITO_AUTHORIZER_ARN,
-                // }
+                authorizer: {
+                    name: "authorizer",     
+                    arn: process.env.COGNITO_AUTHORIZER_ARN,
+                },
+                timeout: 30, // Increased timeout for image processing
             }
         }
     ]

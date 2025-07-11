@@ -9,6 +9,8 @@ import getEvents from "./users/get-events";
 import  gurudwaraStatus from "./admin/gurudwara-status";
 import adminUpdateEventStatus from "./admin/event-status";
 import uploadImage from "./users/upload-image";
+import getEventByUser from "./users/get-event-by-user";
+import getGurudwaraByUser from "./users/get-gurudwara-by-user";
 
 export default {
     user_details,
@@ -22,4 +24,6 @@ export default {
     gurudwaraStatus,
     adminUpdateEventStatus,
     uploadImage,
+    getEventByUser,
+    getGurudwaraByUser,
 }

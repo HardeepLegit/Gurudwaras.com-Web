@@ -2,7 +2,9 @@ import { Buffer } from 'buffer';
 
 async function imageUrlToBase64(url: string): Promise<string> {
   const response = await fetch(url);
+  console.log('Response Status: %j', response);
   const arrayBuffer = await response.arrayBuffer();
+  console.log('ArrayBuffer Length:', arrayBuffer);
   const base64 = Buffer.from(arrayBuffer).toString('base64');
   // You may want to prepend the data URL prefix depending on your use case
   const contentType = response.headers.get('content-type') || 'image/jpeg';
