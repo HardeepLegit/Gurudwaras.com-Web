@@ -2,7 +2,8 @@ interface Body{
   message : string;
   data? : any;
   statusCode : number;
-  success?: Boolean
+  success?: Boolean,
+  errors?: string;
 }
 
 export const formatJSONResponse = async (response: Body, event = null) => {
@@ -13,7 +14,8 @@ export const formatJSONResponse = async (response: Body, event = null) => {
         message: response.message,
         statusCode: response.statusCode,
         success: response.success,
-        data : response.data
+        data : response.data,
+        errors: response.errors
     }),
     headers: {
       "Access-Control-Allow-Origin": "*",

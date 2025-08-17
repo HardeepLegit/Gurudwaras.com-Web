@@ -1,18 +1,16 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 export const GurudwaraSchema = z.object({
   id: z.string(), // assuming it's a string ID
-  name: z.object({
-    pun: z.string().optional(),
-    eng: z.string().optional(),
-    hin: z.string().optional(),
-  })
-  .refine(
-    (val) => !!val.pun || !!val.eng || !!val.hin,
-    {
-      message: "At least one name (pun, eng, or hin) must be provided.",
-    }
-  ),
+  name: z
+    .object({
+      pun: z.string().optional(),
+      eng: z.string().optional(),
+      hin: z.string().optional(),
+    })
+    .refine((val) => !!val.pun || !!val.eng || !!val.hin, {
+      message: 'At least one name (pun, eng, or hin) must be provided.',
+    }),
   phoneLandline: z.string().optional(),
   phoneMobile: z.string(),
   createdDate: z.string(),
@@ -33,55 +31,46 @@ export const GurudwaraSchema = z.object({
   addedByUserId: z.string(),
   approvedByAdmin: z.boolean().default(false),
   upcomingEvents: z.array(z.string()).optional(), // assuming array of event IDs/names
-  address: z.object({
-    pun: z.string().optional(),
-    eng: z.string().optional(),
-    hin: z.string().optional(),
-  })
-  .refine(
-    (val) => !!val.pun || !!val.eng || !!val.hin,
-    {
-      message: "At least one name (pun, eng, or hin) must be provided.",
-    }
-  ),
-  city: z.object({
-    pun: z.string().optional(),
-    eng: z.string().optional(),
-    hin: z.string().optional(),
-  })
-  .refine(
-    (val) => !!val.pun || !!val.eng || !!val.hin,
-    {
-      message: "At least one name (pun, eng, or hin) must be provided.",
-    }
-  ),
-  state: z.object({
-    pun: z.string().optional(),
-    eng: z.string().optional(),
-    hin: z.string().optional(),
-  })
-  .refine(
-    (val) => !!val.pun || !!val.eng || !!val.hin,
-    {
-      message: "At least one name (pun, eng, or hin) must be provided.",
-    }
-  ),
+  address: z
+    .object({
+      pun: z.string().optional(),
+      eng: z.string().optional(),
+      hin: z.string().optional(),
+    })
+    .refine((val) => !!val.pun || !!val.eng || !!val.hin, {
+      message: 'At least one name (pun, eng, or hin) must be provided.',
+    }),
+  city: z
+    .object({
+      pun: z.string().optional(),
+      eng: z.string().optional(),
+      hin: z.string().optional(),
+    })
+    .refine((val) => !!val.pun || !!val.eng || !!val.hin, {
+      message: 'At least one name (pun, eng, or hin) must be provided.',
+    }),
+  state: z
+    .object({
+      pun: z.string().optional(),
+      eng: z.string().optional(),
+      hin: z.string().optional(),
+    })
+    .refine((val) => !!val.pun || !!val.eng || !!val.hin, {
+      message: 'At least one name (pun, eng, or hin) must be provided.',
+    }),
   postalCode: z.string().optional(),
-  country: z.object({
-    pun: z.string().optional(),
-    eng: z.string().optional(),
-    hin: z.string().optional(),
-  })
-  .refine(
-    (val) => !!val.pun || !!val.eng || !!val.hin,
-    {
-      message: "At least one name (pun, eng, or hin) must be provided.",
-    }
-  ),
-  additionalDate: z.string().refine(
-    (val) => /^\d{2}-\d{2}-\d{4}$/.test(val),
-    { message: "Must be in DD-MM-YYYY format" }
-  ),
+  country: z
+    .object({
+      pun: z.string().optional(),
+      eng: z.string().optional(),
+      hin: z.string().optional(),
+    })
+    .refine((val) => !!val.pun || !!val.eng || !!val.hin, {
+      message: 'At least one name (pun, eng, or hin) must be provided.',
+    }),
+  additionalDate: z
+    .string()
+    .refine((val) => /^\d{2}-\d{2}-\d{4}$/.test(val), { message: 'Must be in DD-MM-YYYY format' }),
   facilitiesAndServices: z.object({
     accommodationAvailable: z.boolean().optional(),
     langarAvailable: z.boolean().optional(),
@@ -100,17 +89,26 @@ export const GurudwaraSchema = z.object({
     doctorAvailable: z.boolean().optional(),
     medicosAvailable: z.boolean().optional(),
   }),
-  status: z.enum(["ONHOLD","PENDING","REJECTED","APPROVED"]).default("PENDING"),
+  status: z.enum(['ONHOLD', 'PENDING', 'REJECTED', 'APPROVED']).default('PENDING'),
 });
 export const GurudwaraSchemaUser = z.object({
   id: z.string(), // assuming it's a string ID
   name: z.string().optional(),
   phoneLandline: z.string().optional(),
   phoneMobile: z.string(),
-  createdDate: z.string().optional().default(() => new Date().toISOString()),
-  updatedDate: z.string().optional().default(() => new Date().toISOString()),
+  createdDate: z
+    .string()
+    .optional()
+    .default(() => new Date().toISOString()),
+  updatedDate: z
+    .string()
+    .optional()
+    .default(() => new Date().toISOString()),
   emailId: z.string().email().optional(),
   website: z.string().url().optional(),
+  facebook: z.string().url().optional(),
+  instagram: z.string().url().optional(),
+  youtube: z.string().url().optional(),
   accommodationAvailable: z.boolean().optional(),
   addedGurudwaras: z.array(z.string()).optional(), // assuming array of IDs/names
   pictures: z.array(z.string()).optional(), // assuming array of image URLs
@@ -126,10 +124,9 @@ export const GurudwaraSchemaUser = z.object({
   state: z.string().optional(),
   postalCode: z.string().optional(),
   country: z.string().optional(),
-  additionalDate: z.string().refine(
-    (val) => /^\d{2}-\d{2}-\d{4}$/.test(val),
-    { message: "Must be in DD-MM-YYYY format" }
-  ),
+  additionalDate: z
+    .string()
+    .refine((val) => /^\d{2}-\d{2}-\d{4}$/.test(val), { message: 'Must be in DD-MM-YYYY format' }),
   facilitiesAndServices: z.object({
     accommodationAvailable: z.boolean().optional(),
     langarAvailable: z.boolean().optional(),
@@ -148,105 +145,93 @@ export const GurudwaraSchemaUser = z.object({
     doctorAvailable: z.boolean().optional(),
     medicosAvailable: z.boolean().optional(),
   }),
-  status: z.enum(["ONHOLD","PENDING","REJECTED","APPROVED"]).default("PENDING"),
+  status: z.enum(['ONHOLD', 'PENDING', 'REJECTED', 'APPROVED']).default('PENDING'),
 });
-
 
 export const eventSchema = z.object({
   id: z.string(), // Optional for new events, required for updates
-  Title: z
-    .string()
-    .min(1, "Event Title is required")
-    .max(200, "Event Title is too long"),
+  Title: z.string().min(1, 'Event Title is required').max(200, 'Event Title is too long'),
 
-  gurudwaraId: z
+  gurudwaraId: z.string().optional(),
+  createdDate: z
     .string()
-    .optional(),
-  createdDate: z.string().optional().default(() => new Date().toISOString()),
-  updatedDate: z.string().optional().default(() => new Date().toISOString()),
+    .optional()
+    .default(() => new Date().toISOString()),
+  updatedDate: z
+    .string()
+    .optional()
+    .default(() => new Date().toISOString()),
   startDate: z
     .string()
-    .min(1, "Start date is required")
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Start Date must be in YYYY-MM-DD format"),
+    .min(1, 'Start date is required')
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Start Date must be in YYYY-MM-DD format'),
 
   endDate: z
     .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "End Date must be in YYYY-MM-DD format")
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'End Date must be in YYYY-MM-DD format')
     .optional()
-    .or(z.literal("").transform(() => undefined)),
-
-  startTime: z
-    .string()
-    .min(1, "Start time is required"),
+    .or(z.literal('').transform(() => undefined)),
+  location: z.string().min(1, 'Event location is required').max(500, 'Event location is too long'),
+  gurudwaraName: z.string().optional(),
+  startTime: z.string().min(1, 'Start time is required'),
 
   endTime: z.string().optional(),
-  addedByUserId: z.string().min(1, "User ID is required"),
-  eventDescription: z
-    .string()
-    .min(1, "Event description is required"),
+  addedByUserId: z.string().min(1, 'User ID is required'),
+  eventDescription: z.string().min(1, 'Event description is required'),
 
   additionalInformation: z.string().optional(),
-
+  description: z.string().optional(),
   youtubeLink: z
     .string()
-    .url("Invalid YouTube link")
     .optional()
-    .or(z.literal("").transform(() => undefined)),
+    .or(z.literal('').transform(() => undefined)),
 
-  additionalVideoUrls: z
-    .array(z.string().url("Each video URL must be valid"))
-    .optional(),
+  additionalVideoUrls: z.array(z.string().url('Each video URL must be valid')).optional(),
 
-  contactPersons: z
-    .array(z.string().min(1, "Contact person name cannot be empty"))
+  organizer: z
+    .object({
+      name: z.string().optional(),
+      phoneNumber: z.string().optional(),
+      email: z.string().optional(),
+      image: z.string().optional(),
+    })
     .optional(),
 
   personalities: z
-    .array(z.object({
-  name: z.string().min(1, "Personality name is required"),
-  phoneNumber: z
-    .string()
-    .regex(/^\+?[0-9\s\-()]{7,}$/, "Invalid phone number")
-    .optional(),
+    .array(
+      z.object({
+        name: z.string().min(1, 'Personality name is required'),
+        phoneNumber: z
+          .string()
+          .regex(/^\+?[0-9\s\-()]{7,}$/, 'Invalid phone number')
+          .optional(),
 
-  website: z
-    .string()
-    .url("Invalid website URL")
-    .optional(),
+        website: z.string().optional(),
 
-  facebook: z
-    .string()
-    .url("Invalid Facebook URL")
-    .optional(),
+        facebook: z.string().optional(),
 
-  twitter: z
-    .string()
-    .url("Invalid Twitter URL")
-    .optional(),
+        twitter: z.string().optional(),
 
-  instagram: z
-    .string()
-    .url("Invalid Instagram URL")
-    .optional(),
+        instagram: z.string().optional(),
 
-  linkedin: z
-    .string()
-    .url("Invalid LinkedIn URL")
-    .optional()
-})
-).optional(),
-  status: z.enum(["ONHOLD","PENDING","REJECTED","APPROVED"]).default("PENDING"),
+        linkedin: z.string().optional(),
+        youtube: z.string().optional(),
+        profileImage: z.string().optional(),
+        bio: z.string().optional(),
+      })
+    )
+    .optional(),
+  status: z.enum(['ONHOLD', 'PENDING', 'REJECTED', 'APPROVED']).default('PENDING'),
   bannerImages: z
     .array(z.string()) // You may use File/Blob if you're validating before upload
-    .optional()
+    .optional(),
 });
 
-
 export const profileSchema = z.object({
-  id: z.string(), 
-  email: z.string().email(),  // Required and must be a valid email
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
+  id: z.string(),
+  email: z.string().email(), // Required and must be a valid email
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
   address: z.string().optional(),
   city: z.string().optional(),
   stateProvinceZip: z.string().optional(), // You can split into `state` and `zip` if needed
@@ -255,13 +240,19 @@ export const profileSchema = z.object({
     .string()
     .optional()
     .refine((val) => !val || /^\d{7,15}$/.test(val), {
-      message: "Invalid phone number",
+      message: 'Invalid phone number',
     }),
   // This field can help in managing if email/phone is verified
   isEmailVerified: z.boolean().optional(),
   isPhoneVerified: z.boolean().optional(),
 
   // Optional timestamps
-  createdDate: z.string().optional().default(() => new Date().toISOString()),
-  updatedDate: z.string().optional().default(() => new Date().toISOString()),
+  createdDate: z
+    .string()
+    .optional()
+    .default(() => new Date().toISOString()),
+  updatedDate: z
+    .string()
+    .optional()
+    .default(() => new Date().toISOString()),
 });
