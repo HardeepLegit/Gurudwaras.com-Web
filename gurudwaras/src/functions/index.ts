@@ -11,6 +11,8 @@ import adminUpdateEventStatus from "./admin/event-status";
 import uploadImage from "./users/upload-image";
 import getEventByUser from "./users/get-event-by-user";
 import getGurudwaraByUser from "./users/get-gurudwara-by-user";
+import updateEvent from "./users/update-event";
+import deleteEvent from "./users/delete-event";
 
 export default {
     user_details,
@@ -26,4 +28,7 @@ export default {
     uploadImage,
     getEventByUser,
     getGurudwaraByUser,
+    updateEvent,
+    deleteEvent,
+    deleteGurduwaraById,
 }

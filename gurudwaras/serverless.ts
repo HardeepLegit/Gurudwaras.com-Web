@@ -4,8 +4,6 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const serverlessConfiguration: AWS = {
-  org: 'gurudwaras123',
-  app: 'gurudwaras',
   service: 'gurudwaras',
 
   plugins: ['serverless-offline', 'serverless-dotenv-plugin'],
@@ -13,7 +11,7 @@ const serverlessConfiguration: AWS = {
   provider: {
     name: 'aws',
     runtime: 'nodejs20.x',
-    profile: 'default',
+    profile: 'Gururdwara2',
     stage: "${opt:stage, 'dev'}",
     region: process.env.GURUDWARA_AWS_REGION as AWS['provider']['region'],
     apiGateway: {

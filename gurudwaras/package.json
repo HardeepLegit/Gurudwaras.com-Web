@@ -5,7 +5,7 @@
   "main": "handler.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "server": "sls offline ",
+    "server": "sls offline --aws-profile Gururdwara2",
     "dev": "nodemon -e js,ts,jsx,tsx -x npm run server "
   },
   "keywords": [],
@@ -35,6 +35,7 @@
     "file-type": "^21.0.0",
     "middy": "^0.36.0",
     "path": "^0.12.7",
+    "serverless": "^4.18.0",
     "undici": "^7.11.0",
     "zod": "^3.25.67"
   }

@@ -6,7 +6,7 @@ export default {
         {
             http: {
                 method: "delete",
-                path: "user/delete-gurudwara/{id}",
+                path: "user/delete-event/{id}",
                 cors: true,
                 timeout: 30,
                 authorizer: {

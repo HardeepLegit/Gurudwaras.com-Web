@@ -6,51 +6,51 @@ import { DynamoDBDocumentClient, DeleteCommand, GetCommand } from '@aws-sdk/lib-
 import { checkUserProfile } from 'src/middleware/userMiddleware';
 
 const region = process.env.GURUDWARA_AWS_REGION;
-const GURUDWARA_TABLE = process.env.GURUDWARA_DB as string;
+const GURUDWARA_EVENTS_TABLE = process.env.GURUDWARA_EVENTS_DB as string;
 
 const ddbClient = DynamoDBDocumentClient.from(new DynamoDBClient({ region }));
 
-const deleteGurudwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => {
+const deleteEvent: APIGatewayProxyHandler = async (event: APIGatewayEvent) => {
   try {
-    const gurudwaraId = event.pathParameters?.id;
-    if (!gurudwaraId) {
+    const eventId = event.pathParameters?.id;
+    if (!eventId) {
       return formatJSONResponse({
         statusCode: 400,
         success: false,
-        message: 'Gurudwara ID is required',
+        message: 'Event ID is required',
       });
     }
 
     const user = event.requestContext?.authorizer?.user;
 
-    // Check if gurudwara exists and user owns it
+    // Check if event exists and user owns it
     const getCommand = new GetCommand({
-      TableName: GURUDWARA_TABLE,
-      Key: { id: gurudwaraId },
+      TableName: GURUDWARA_EVENTS_TABLE,
+      Key: { id: eventId },
     });
 
-    const existingGurudwara = await ddbClient.send(getCommand);
-    if (!existingGurudwara.Item) {
+    const existingEvent = await ddbClient.send(getCommand);
+    if (!existingEvent.Item) {
       return formatJSONResponse({
         statusCode: 404,
         success: false,
-        message: 'Gurudwara not found',
+        message: 'Event not found',
       });
     }
 
-    // Check if user owns the gurudwara
-    if (existingGurudwara.Item.addedByUserId !== user.id) {
+    // Check if user owns the event
+    if (existingEvent.Item.addedByUserId !== user.id) {
       return formatJSONResponse({
         statusCode: 403,
         success: false,
-        message: 'You can only delete your own gurudwaras',
+        message: 'You can only delete your own events',
       });
     }
 
-    // Delete the gurudwara
+    // Delete the event
     const deleteCommand = new DeleteCommand({
-      TableName: GURUDWARA_TABLE,
-      Key: { id: gurudwaraId },
+      TableName: GURUDWARA_EVENTS_TABLE,
+      Key: { id: eventId },
     });
 
     await ddbClient.send(deleteCommand);
@@ -58,10 +58,10 @@ const deleteGurudwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) =
     return formatJSONResponse({
       statusCode: 200,
       success: true,
-      message: 'Gurudwara deleted successfully',
+      message: 'Event deleted successfully',
     });
   } catch (error: any) {
-    console.error('Error deleting gurudwara:', {
+    console.error('Error deleting event:', {
       message: error.message,
       stack: error.stack,
     });
@@ -69,9 +69,9 @@ const deleteGurudwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) =
     return formatJSONResponse({
       statusCode: 500,
       success: false,
-      message: 'Internal server error while deleting gurudwara',
+      message: 'Internal server error while deleting event',
     });
   }
 };
 
-export const main = middyfy(deleteGurudwara).use(checkUserProfile());
+export const main = middyfy(deleteEvent).use(checkUserProfile());
