@@ -1,186 +1,120 @@
 import { APIGatewayEvent, APIGatewayProxyHandler } from 'aws-lambda';
 import { middyfy } from '@libs/lambda';
-import { formatJSONResponse } from '@libs/api-gateway';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb';
-import uploadImagesToS3 from 'src/common/uploadImageToS3';
-const region = process.env.GURUDWARA_AWS_REGION;
-const client = new DynamoDBClient({ region });
-const dynamodb = DynamoDBDocumentClient.from(client);
+import { formatSuccessResponse, formatErrorResponse } from '@libs/api-gateway';
+import { gurudwaraDB } from '../../../common/DynomoDB';
+import { Validator, commonSchemas } from '../../../common/validation';
+import { ValidationError, NotFoundError, handleError } from '../../../common/errors';
+import { logger } from '../../../common/logger';
+import uploadImagesToS3 from '../../../common/uploadImageToS3';
 
-const Gurduwara = process.env.GURUDWARA_DB;
+interface UpdateGurudwaraRequest {
+  name?: string;
+  phoneLandline?: string;
+  phoneMobile?: string;
+  emailId?: string;
+  website?: string;
+  accommodationAvailable?: boolean;
+  addedGurudwaras?: string[];
+  pictures?: any[];
+  additionalInfo?: string;
+  registrationNumber?: string;
+  latitude?: number;
+  longitude?: number;
+  addedByUserId?: string;
+  approvedByAdmin?: boolean;
+  upcomingEvents?: any[];
+  address?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  additionalDate?: string;
+  facilitiesAndServices?: any;
+  learningAndEducation?: any;
+  medicalFacilities?: any;
+  status?: string;
+}
 
-const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => {
+const updateGurudwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => {
+  const requestId = event.requestContext.requestId;
+  
   try {
+    logger.logRequest(event.httpMethod, event.path, { requestId });
+
+    // Validate ID parameter
     const id = event.queryStringParameters?.id;
     if (!id) {
-      return formatJSONResponse({
-        statusCode: 400,
-        message: `Missing required parameter: ${id}`,
-        success: false,
-      });
+      throw new ValidationError('Missing required parameter: id');
     }
 
+    // Parse and validate request body
     const body = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
     if (!body || typeof body !== 'object') {
-      return formatJSONResponse({
-        statusCode: 400,
-        message: 'Invalid or missing request body',
-        success: false,
-      });
+      throw new ValidationError('Invalid or missing request body');
     }
 
-    // Destructure all expected fields
-    const {
-      name,
-      phoneLandline,
-      phoneMobile,
-      emailId,
-      website,
-      accommodationAvailable,
-      addedGurudwaras,
-      pictures,
-      additionalInfo,
-      registrationNumber,
-      latitude,
-      longitude,
-      addedByUserId,
-      approvedByAdmin,
-      upcomingEvents,
-      address,
-      city,
-      state,
-      postalCode,
-      country,
-      additionalDate,
-      facilitiesAndServices,
-      learningAndEducation,
-      medicalFacilities,
-      status,
-      updatedDate,
-    } = body;
-    let updatedPictures = pictures;
-    if (updatedPictures && updatedPictures.length > 0) {
-      const bannerUploadResult = await uploadImagesToS3({
-        id: id,
-        images: updatedPictures,
+    // Validate required fields for update
+    const updateData: UpdateGurudwaraRequest = body;
+    
+    // Check if gurudwara exists
+    const existingGurudwara = await gurudwaraDB.getItem({ id });
+    if (!existingGurudwara) {
+      throw new NotFoundError('Gurudwara');
+    }
+
+    // Handle image upload if pictures are provided
+    let processedPictures = updateData.pictures;
+    if (updateData.pictures && Array.isArray(updateData.pictures) && updateData.pictures.length > 0) {
+      logger.info('Processing image upload', { requestId, gurudwaraId: id });
+      
+      const uploadResult = await uploadImagesToS3({
+        id,
+        images: updateData.pictures,
       });
-      if (!Array.isArray(bannerUploadResult)) {
-        return formatJSONResponse({
-          statusCode: bannerUploadResult.statusCode || 500,
-          success: false,
-          message: 'Banner image upload failed',
-          errors:
-            typeof bannerUploadResult.body === 'string'
-              ? bannerUploadResult.body
-              : JSON.stringify(bannerUploadResult.body),
-        });
+
+      if (!Array.isArray(uploadResult)) {
+        logger.error('Image upload failed', undefined, { requestId, gurudwaraId: id });
+        throw new Error('Image upload failed');
       }
-      updatedPictures = bannerUploadResult;
+      
+      processedPictures = uploadResult;
+      logger.info('Images uploaded successfully', { requestId, gurudwaraId: id, count: uploadResult.length });
     }
 
-    const expressionAttributeNames = {
-      '#name': 'name',
-      '#phoneLandline': 'phoneLandline',
-      '#phoneMobile': 'phoneMobile',
-      '#emailId': 'emailId',
-      '#website': 'website',
-      '#accommodationAvailable': 'accommodationAvailable',
-      '#addedGurudwaras': 'addedGurudwaras',
-      '#pictures': 'pictures',
-      '#additionalInfo': 'additionalInfo',
-      '#registrationNumber': 'registrationNumber',
-      '#latitude': 'latitude',
-      '#longitude': 'longitude',
-      '#addedByUserId': 'addedByUserId',
-      '#approvedByAdmin': 'approvedByAdmin',
-      '#upcomingEvents': 'upcomingEvents',
-      '#address': 'address',
-      '#city': 'city',
-      '#state': 'state',
-      '#postalCode': 'postalCode',
-      '#country': 'country',
-      '#additionalDate': 'additionalDate',
-      '#facilitiesAndServices': 'facilitiesAndServices',
-      '#learningAndEducation': 'learningAndEducation',
-      '#medicalFacilities': 'medicalFacilities',
-      '#status': 'status',
-      '#updatedDate': 'updatedDate',
+    // Prepare update data
+    const fieldsToUpdate = {
+      ...updateData,
+      ...(processedPictures && { pictures: processedPictures }),
+      updatedDate: new Date().toISOString(),
     };
 
-    const expressionAttributeValues = {
-      ':name': name,
-      ':phoneLandline': phoneLandline,
-      ':phoneMobile': phoneMobile,
-      ':emailId': emailId,
-      ':website': website,
-      ':accommodationAvailable': accommodationAvailable,
-      ':addedGurudwaras': addedGurudwaras,
-      ':pictures': updatedPictures,
-      ':additionalInfo': additionalInfo,
-      ':registrationNumber': registrationNumber,
-      ':latitude': latitude,
-      ':longitude': longitude,
-      ':addedByUserId': addedByUserId,
-      ':approvedByAdmin': approvedByAdmin,
-      ':upcomingEvents': upcomingEvents,
-      ':address': address,
-      ':city': city,
-      ':state': state,
-      ':postalCode': postalCode,
-      ':country': country,
-      ':additionalDate': additionalDate,
-      ':facilitiesAndServices': facilitiesAndServices,
-      ':learningAndEducation': learningAndEducation,
-      ':medicalFacilities': medicalFacilities,
-      ':status': status,
-      ':updatedDate': new Date().toISOString(),
-    };
+    // Remove undefined values
+    Object.keys(fieldsToUpdate).forEach(key => {
+      if (fieldsToUpdate[key as keyof UpdateGurudwaraRequest] === undefined) {
+        delete fieldsToUpdate[key as keyof UpdateGurudwaraRequest];
+      }
+    });
 
-    // Build the update expression dynamically to avoid undefined issues
-    const updateParts = Object.entries(expressionAttributeValues)
-      .filter(([_, value]) => value !== undefined)
-      .map(([key]) => `${key.replace(':', '#')}= ${key}`);
+    logger.logDatabaseOperation('update', 'gurudwara', { requestId, gurudwaraId: id });
 
-    const filteredAttrNames = Object.fromEntries(
-      Object.entries(expressionAttributeNames).filter(([key]) =>
-        updateParts.some((part) => part.includes(key))
-      )
+    // Update gurudwara
+    const updatedGurudwara = await gurudwaraDB.updateItem({ id }, fieldsToUpdate);
+
+    logger.info('Gurudwara updated successfully', { requestId, gurudwaraId: id });
+
+    return formatSuccessResponse(
+      updatedGurudwara,
+      'Gurudwara updated successfully',
+      200,
+      { requestId }
     );
 
-    const filteredAttrValues = Object.fromEntries(
-      Object.entries(expressionAttributeValues).filter(([_, value]) => value !== undefined)
-    );
-
-    const updateExpression = `SET ${updateParts.join(', ')}`;
-
-    const params = {
-      TableName: Gurduwara,
-      Key: { id },
-      ExpressionAttributeNames: filteredAttrNames,
-      ExpressionAttributeValues: filteredAttrValues,
-      UpdateExpression: updateExpression,
-      ReturnValues: 'UPDATED_NEW' as const,
-    };
-
-    console.log('DynamoDB Update Params:', JSON.stringify(params, null, 2));
-
-    const result = await dynamodb.send(new UpdateCommand(params));
-
-    return formatJSONResponse({
-      statusCode: 200,
-      success: true,
-      message: 'Gurudwara updated successfully',
-      data: result.Attributes,
-    });
-  } catch (error: any) {
-    console.error('Error updating Gurudwara:', error);
-    return formatJSONResponse({
-      statusCode: 500,
-      success: false,
-      message: 'Failed to update Gurudwara',
-    });
+  } catch (error) {
+    const appError = handleError(error);
+    logger.error('Failed to update gurudwara', error as Error, { requestId });
+    
+    return formatErrorResponse(appError, undefined, { requestId });
   }
 };
 
-export const main = middyfy(editGurduwara);
+export const main = middyfy(updateGurudwara);
