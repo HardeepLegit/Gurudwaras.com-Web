@@ -145,6 +145,7 @@ export const GurudwaraSchemaUser = z.object({
     doctorAvailable: z.boolean().optional(),
     medicosAvailable: z.boolean().optional(),
   }),
+  singhSabha: z.boolean().default(false),
   status: z.enum(['ONHOLD', 'PENDING', 'REJECTED', 'APPROVED']).default('PENDING'),
 });
 

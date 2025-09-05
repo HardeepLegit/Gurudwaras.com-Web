@@ -57,6 +57,7 @@ const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => 
       learningAndEducation,
       medicalFacilities,
       status,
+      singhSabha,
       updatedDate,
     } = body;
     let updatedPictures = pictures;
@@ -105,6 +106,7 @@ const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => 
       '#learningAndEducation': 'learningAndEducation',
       '#medicalFacilities': 'medicalFacilities',
       '#status': 'status',
+      '#singhSabha': 'singhSabha',
       '#updatedDate': 'updatedDate',
     };
 
@@ -134,6 +136,7 @@ const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => 
       ':learningAndEducation': learningAndEducation,
       ':medicalFacilities': medicalFacilities,
       ':status': status,
+      ':singhSabha': singhSabha || false,
       ':updatedDate': new Date().toISOString(),
     };
 
