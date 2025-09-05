@@ -13,6 +13,10 @@ import getEventByUser from "./users/get-event-by-user";
 import getGurudwaraByUser from "./users/get-gurudwara-by-user";
 import updateEvent from "./users/update-event";
 import deleteEvent from "./users/delete-event";
+import adminUpdateGurduwara from "./admin/update-gurduwara";
+import adminUpdateEvent from "./admin/update-event";
+import AdminDeleteGurduwara from "./admin/delete-gurduwara";
+import AdminDeleteEvent from "./admin/delete-event";
 
 export default {
     user_details,
@@ -31,4 +35,8 @@ export default {
     updateEvent,
     deleteEvent,
     deleteGurduwaraById,
+    adminUpdateGurduwara,
+    adminUpdateEvent,
+    AdminDeleteGurduwara,
+    AdminDeleteEvent
 }

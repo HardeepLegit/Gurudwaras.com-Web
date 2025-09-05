@@ -10,7 +10,7 @@ const dynamodb = DynamoDBDocumentClient.from(client);
 
 const Gurduwara = process.env.GURUDWARA_DB;
 
-const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => {
+const adminUpdateGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => {
   try {
     const id = event.queryStringParameters?.id;
     if (!id) {
@@ -78,7 +78,6 @@ const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => 
       }
       updatedPictures = bannerUploadResult;
     }
-
     const expressionAttributeNames = {
       '#name': 'name',
       '#phoneLandline': 'phoneLandline',
@@ -183,4 +182,4 @@ const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => 
   }
 };
 
-export const main = middyfy(editGurduwara);
+export const main = middyfy(adminUpdateGurduwara);
