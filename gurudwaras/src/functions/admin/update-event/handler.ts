@@ -6,6 +6,7 @@ import { DynamoDBDocumentClient, UpdateCommand, GetCommand } from '@aws-sdk/lib-
 // import { eventSchema } from '../../../Schema/gurudwaras';
 // import { checkUserProfile } from 'src/middleware/userMiddleware';
 import uploadImagesToS3 from 'src/common/uploadImageToS3';
+import { checkAdminRole } from 'src/middleware/adminMiddleware';
 
 const region = process.env.GURUDWARA_AWS_REGION;
 const GURUDWARA_EVENTS_TABLE = process.env.GURUDWARA_EVENTS_DB as string;
@@ -140,4 +141,4 @@ const adminUpdateEvent: APIGatewayProxyHandler = async (event: APIGatewayEvent) 
   }
 };
 
-export const main = middyfy(adminUpdateEvent);
+export const main = middyfy(adminUpdateEvent).use(checkAdminRole());

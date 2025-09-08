@@ -17,6 +17,7 @@ import adminUpdateGurduwara from "./admin/update-gurduwara";
 import adminUpdateEvent from "./admin/update-event";
 import AdminDeleteGurduwara from "./admin/delete-gurduwara";
 import AdminDeleteEvent from "./admin/delete-event";
+import SinghSabhaGurudwaras from "./users/singh-sabha-gurudwaras";
 
 export default {
     user_details,
@@ -38,5 +39,6 @@ export default {
     adminUpdateGurduwara,
     adminUpdateEvent,
     AdminDeleteGurduwara,
-    AdminDeleteEvent
+    AdminDeleteEvent,
+    SinghSabhaGurudwaras
 }

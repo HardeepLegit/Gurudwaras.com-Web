@@ -4,6 +4,7 @@ import { middyfy } from '@libs/lambda';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, DeleteCommand, GetCommand } from '@aws-sdk/lib-dynamodb';
 import { checkUserProfile } from 'src/middleware/userMiddleware';
+import { checkAdminRole } from 'src/middleware/adminMiddleware';
 
 const region = process.env.GURUDWARA_AWS_REGION;
 const GURUDWARA_EVENTS_TABLE = process.env.GURUDWARA_EVENTS_DB as string;
@@ -39,7 +40,7 @@ const deleteEvent: APIGatewayProxyHandler = async (event: APIGatewayEvent) => {
     }
 
     // Check if user owns the event
-    if (existingEvent.Item.addedByUserId !== user.id) {
+    if (user["cognito:groups"] !== 'admin') {
       return formatJSONResponse({
         statusCode: 403,
         success: false,
@@ -74,4 +75,4 @@ const deleteEvent: APIGatewayProxyHandler = async (event: APIGatewayEvent) => {
   }
 };
 
-export const main = middyfy(deleteEvent);
+export const main = middyfy(deleteEvent).use(checkAdminRole());

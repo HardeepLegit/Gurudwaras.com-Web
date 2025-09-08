@@ -91,63 +91,104 @@ export const GurudwaraSchema = z.object({
   }),
   status: z.enum(['ONHOLD', 'PENDING', 'REJECTED', 'APPROVED']).default('PENDING'),
 });
-export const GurudwaraSchemaUser = z.object({
-  id: z.string(), // assuming it's a string ID
-  name: z.string().optional(),
-  phoneLandline: z.string().optional(),
-  phoneMobile: z.string(),
-  createdDate: z
-    .string()
-    .optional()
-    .default(() => new Date().toISOString()),
-  updatedDate: z
-    .string()
-    .optional()
-    .default(() => new Date().toISOString()),
-  emailId: z.string().email().optional(),
-  website: z.string().url().optional(),
-  facebook: z.string().url().optional(),
-  instagram: z.string().url().optional(),
-  youtube: z.string().url().optional(),
-  accommodationAvailable: z.boolean().optional(),
-  addedGurudwaras: z.array(z.string()).optional(), // assuming array of IDs/names
-  pictures: z.array(z.string()).optional(), // assuming array of image URLs
-  additionalInfo: z.string().optional(),
-  registrationNumber: z.string().optional(),
-  latitude: z.string(),
-  longitude: z.string(),
-  addedByUserId: z.string(),
-  approvedByAdmin: z.boolean().default(false),
-  upcomingEvents: z.array(z.object({})).optional(), // assuming array of event IDs/names
-  address: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  postalCode: z.string().optional(),
-  country: z.string().optional(),
-  additionalDate: z
-    .string()
-    .refine((val) => /^\d{2}-\d{2}-\d{4}$/.test(val), { message: 'Must be in DD-MM-YYYY format' }),
-  facilitiesAndServices: z.object({
+export const GurudwaraSchemaUser = z
+  .object({
+    id: z.string(), // assuming it's a string ID
+    name: z.string().optional(),
+    phoneLandline: z.string().optional(),
+    phoneMobile: z.string(),
+    createdDate: z
+      .string()
+      .optional()
+      .default(() => new Date().toISOString()),
+    updatedDate: z
+      .string()
+      .optional()
+      .default(() => new Date().toISOString()),
+    emailId: z.string().email().optional(),
+    website: z.string().url().optional(),
+    facebook: z.string().url().optional(),
+    instagram: z.string().url().optional(),
+    youtube: z.string().url().optional(),
     accommodationAvailable: z.boolean().optional(),
-    langarAvailable: z.boolean().optional(),
-    parkingAvailable: z.boolean().optional(),
-  }),
+    addedGurudwaras: z.array(z.string()).optional(), // assuming array of IDs/names
+    pictures: z.array(z.string()).optional(), // assuming array of image URLs
+    additionalInfo: z.string().optional(),
+    registrationNumber: z.string().optional(),
+    latitude: z.string(),
+    longitude: z.string(),
+    addedByUserId: z.string(),
+    approvedByAdmin: z.boolean().default(false),
+    upcomingEvents: z.array(z.object({})).optional(), // assuming array of event IDs/names
+    address: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    postalCode: z.string().optional(),
+    country: z.string().optional(),
+    additionalDate: z.string().refine((val) => /^\d{2}-\d{2}-\d{4}$/.test(val), {
+      message: 'Must be in DD-MM-YYYY format',
+    }),
+    facilitiesAndServices: z.object({
+      accommodationAvailable: z.boolean().optional(),
+      langarAvailable: z.boolean().optional(),
+      parkingAvailable: z.boolean().optional(),
+    }),
 
-  learningAndEducation: z.object({
-    gurmatClasses: z.boolean().optional(),
-    keertanClasses: z.boolean().optional(),
-    sikhMartialArtsClasses: z.boolean().optional(),
-    gurbaniSanthyaClasses: z.boolean().optional(),
-  }),
+    learningAndEducation: z
+      .object({
+        gurmatClasses: z.boolean().optional(),
+        keertanClasses: z.boolean().optional(),
+        sikhMartialArtsClasses: z.boolean().optional(),
+        gurbaniSanthyaClasses: z.boolean().optional(),
+        institute: z.boolean().optional(),
+        instituteInfo: z.string().optional(),
+      })
+      .refine(
+        (data) => {
+          if (data.institute === true && !data.instituteInfo) {
+            return false;
+          }
+          return true;
+        },
+        {
+          message: 'Institute name is required when institute is true',
+        }
+      ),
 
-  medicalFacilities: z.object({
-    labFacilities: z.boolean().optional(),
-    doctorAvailable: z.boolean().optional(),
-    medicosAvailable: z.boolean().optional(),
-  }),
-  singhSabha: z.boolean().default(false),
-  status: z.enum(['ONHOLD', 'PENDING', 'REJECTED', 'APPROVED']).default('PENDING'),
-});
+    medicalFacilities: z
+      .object({
+        labFacilities: z.boolean().optional(),
+        doctorAvailable: z.boolean().optional(),
+        medicosAvailable: z.boolean().optional(),
+        hospital: z.boolean().optional(),
+        hospitalInfo: z.string().optional(),
+      })
+      .refine(
+        (data) => {
+          if (data.hospital === true && !data.hospitalInfo) {
+            return false;
+          }
+          return true;
+        },
+        {
+          message: 'Hospital name is required when hospital is true',
+        }
+      ),
+    singhSabha: z.boolean().default(false),
+    singhSabhaInfo: z.string().optional(),
+    status: z.enum(['ONHOLD', 'PENDING', 'REJECTED', 'APPROVED']).default('PENDING'),
+  })
+  .refine(
+    (data) => {
+      if (data.singhSabha === true && !data.singhSabhaInfo) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'Singh Sabha info is required when Singh Sabha is true',
+    }
+  );
 
 export const eventSchema = z.object({
   id: z.string(), // Optional for new events, required for updates

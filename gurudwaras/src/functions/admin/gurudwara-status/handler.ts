@@ -3,6 +3,7 @@ import { middyfy } from "@libs/lambda";
 import { formatJSONResponse } from "@libs/api-gateway";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { checkAdminRole } from "src/middleware/adminMiddleware";
 const region = process.env.GURUDWARA_AWS_REGION
 const client = new DynamoDBClient({ region });
 const dynamodb = DynamoDBDocumentClient.from(client);
@@ -54,4 +55,4 @@ const adminUpdateStatus: APIGatewayProxyHandler = async (event: APIGatewayEvent)
   }
 };
 
-export const main = middyfy(adminUpdateStatus);
+export const main = middyfy(adminUpdateStatus).use(checkAdminRole());

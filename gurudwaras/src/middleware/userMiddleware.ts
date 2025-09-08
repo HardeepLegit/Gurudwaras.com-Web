@@ -57,9 +57,9 @@ export const checkUserProfile = (): MiddlewareObj => {
           id: userId,
           email: claims?.email || '',
           name: claims?.name || '',
+          profile: 'user',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          // add any other default fields you want
         };
 
         const putCommand = new PutItemCommand({

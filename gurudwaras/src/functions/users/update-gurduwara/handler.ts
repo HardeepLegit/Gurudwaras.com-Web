@@ -4,6 +4,7 @@ import { formatJSONResponse } from '@libs/api-gateway';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import uploadImagesToS3 from 'src/common/uploadImageToS3';
+import { checkUserProfile } from 'src/middleware/userMiddleware';
 const region = process.env.GURUDWARA_AWS_REGION;
 const client = new DynamoDBClient({ region });
 const dynamodb = DynamoDBDocumentClient.from(client);
@@ -13,6 +14,14 @@ const Gurduwara = process.env.GURUDWARA_DB;
 const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => {
   try {
     const id = event.queryStringParameters?.id;
+    const user = event.requestContext.authorizer?.user
+    if (!user) {
+      return formatJSONResponse({
+        statusCode: 401,
+        success: false,
+        message: 'Unauthorized',
+      });
+    }
     if (!id) {
       return formatJSONResponse({
         statusCode: 400,
@@ -58,8 +67,17 @@ const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => 
       medicalFacilities,
       status,
       singhSabha,
+      singhSabhaInfo,
       updatedDate,
+
     } = body;
+    if (addedByUserId !== user.id) {
+      return formatJSONResponse({
+        statusCode: 403,
+        success: false,
+        message: 'You can only update your own gurudwaras',
+      });
+    }
     let updatedPictures = pictures;
     if (updatedPictures && updatedPictures.length > 0) {
       const bannerUploadResult = await uploadImagesToS3({
@@ -107,6 +125,7 @@ const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => 
       '#medicalFacilities': 'medicalFacilities',
       '#status': 'status',
       '#singhSabha': 'singhSabha',
+      '#singhSabhaInfo': 'singhSabhaInfo',
       '#updatedDate': 'updatedDate',
     };
 
@@ -137,6 +156,7 @@ const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => 
       ':medicalFacilities': medicalFacilities,
       ':status': status,
       ':singhSabha': singhSabha || false,
+      ':singhSabhaInfo': singhSabhaInfo,
       ':updatedDate': new Date().toISOString(),
     };
 
@@ -186,4 +206,4 @@ const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => 
   }
 };
 
-export const main = middyfy(editGurduwara);
+export const main = middyfy(editGurduwara).use(checkUserProfile());

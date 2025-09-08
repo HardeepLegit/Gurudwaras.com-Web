@@ -38,7 +38,14 @@ const updateEvent: APIGatewayProxyHandler = async (event: APIGatewayEvent) => {
         message: 'Event not found',
       });
     }
-
+    const user = event.requestContext?.authorizer?.user;
+    if (existingEvent.Item.addedByUserId !== user.id) {
+      return formatJSONResponse({
+        statusCode: 403,
+        success: false,
+        message: 'You can only update your own events',
+      });
+    }
     const rawBody = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
     
     // Remove restricted fields that users cannot update

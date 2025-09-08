@@ -4,6 +4,7 @@ import { middyfy } from '@libs/lambda';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, DeleteCommand, GetCommand } from '@aws-sdk/lib-dynamodb';
 import { checkUserProfile } from 'src/middleware/userMiddleware';
+import { checkAdminRole } from 'src/middleware/adminMiddleware';
 
 const region = process.env.GURUDWARA_AWS_REGION;
 const GURUDWARA_TABLE = process.env.GURUDWARA_DB as string;
@@ -22,7 +23,7 @@ const deleteGurudwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) =
     }
 
     const user = event.requestContext?.authorizer?.user;
-
+    console.log('User from authorizer:', user);
     // Check if gurudwara exists and user owns it
     const getCommand = new GetCommand({
       TableName: GURUDWARA_TABLE,
@@ -39,7 +40,7 @@ const deleteGurudwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) =
     }
 
     // Check if user owns the gurudwara
-    if (existingGurudwara.Item.addedByUserId !== user.id) {
+    if (user["cognito:groups"] !== 'admin') {
       return formatJSONResponse({
         statusCode: 403,
         success: false,
@@ -74,4 +75,4 @@ const deleteGurudwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) =
   }
 };
 
-export const main = middyfy(deleteGurudwara);
+export const main = middyfy(deleteGurudwara).use(checkAdminRole());

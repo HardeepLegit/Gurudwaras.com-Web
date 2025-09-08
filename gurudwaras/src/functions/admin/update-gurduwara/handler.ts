@@ -4,6 +4,7 @@ import { formatJSONResponse } from '@libs/api-gateway';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import uploadImagesToS3 from 'src/common/uploadImageToS3';
+import { checkAdminRole } from 'src/middleware/adminMiddleware';
 const region = process.env.GURUDWARA_AWS_REGION;
 const client = new DynamoDBClient({ region });
 const dynamodb = DynamoDBDocumentClient.from(client);
@@ -185,4 +186,4 @@ const adminUpdateGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEve
   }
 };
 
-export const main = middyfy(adminUpdateGurduwara);
+export const main = middyfy(adminUpdateGurduwara).use(checkAdminRole());
