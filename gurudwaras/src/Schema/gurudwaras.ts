@@ -113,6 +113,7 @@ export const GurudwaraSchemaUser = z
     accommodationAvailable: z.boolean().optional(),
     addedGurudwaras: z.array(z.string()).optional(), // assuming array of IDs/names
     pictures: z.array(z.string()).optional(), // assuming array of image URLs
+    bannerImage: z.string().optional(),
     additionalInfo: z.string().optional(),
     registrationNumber: z.string().optional(),
     latitude: z.string(),
@@ -141,6 +142,7 @@ export const GurudwaraSchemaUser = z
         sikhMartialArtsClasses: z.boolean().optional(),
         gurbaniSanthyaClasses: z.boolean().optional(),
         institute: z.boolean().optional(),
+        library: z.boolean().optional(),
         instituteInfo: z.string().optional(),
       })
       .refine(
@@ -203,16 +205,20 @@ export const eventSchema = z.object({
     .string()
     .optional()
     .default(() => new Date().toISOString()),
-  startDate: z
-    .string()
-    .min(1, 'Start date is required')
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Start Date must be in YYYY-MM-DD format'),
+  eventDatePeriod: z.array(z.object({
+    startDate: z
+      .string()
+      .min(1, 'Start date is required')
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'Start Date must be in YYYY-MM-DD format'),
 
-  endDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'End Date must be in YYYY-MM-DD format')
-    .optional()
-    .or(z.literal('').transform(() => undefined)),
+    endDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'End Date must be in YYYY-MM-DD format')
+      .optional()
+      .or(z.literal('').transform(() => undefined)),
+    period: z.string().optional(),
+  })),
+  
   location: z.string().min(1, 'Event location is required').max(500, 'Event location is too long'),
   gurudwaraName: z.string().optional(),
   startTime: z.string().min(1, 'Start time is required'),

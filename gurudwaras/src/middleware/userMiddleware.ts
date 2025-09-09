@@ -31,7 +31,7 @@ export const checkUserProfile = (): MiddlewareObj => {
 
       const claims = event.requestContext?.authorizer?.claims;
       const userId = claims?.sub;
-
+      console.log('🔍 Checking events data:', event);
       if (!userId) {
         return request.response = formatJSONResponse({
           statusCode: 401,

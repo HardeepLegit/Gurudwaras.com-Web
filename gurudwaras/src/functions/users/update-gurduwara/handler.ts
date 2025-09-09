@@ -3,7 +3,7 @@ import { middyfy } from '@libs/lambda';
 import { formatJSONResponse } from '@libs/api-gateway';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb';
-import uploadImagesToS3 from 'src/common/uploadImageToS3';
+import uploadImagesToS3, { uploadSingleImagesToS3 } from 'src/common/uploadImageToS3';
 import { checkUserProfile } from 'src/middleware/userMiddleware';
 const region = process.env.GURUDWARA_AWS_REGION;
 const client = new DynamoDBClient({ region });
@@ -14,7 +14,7 @@ const Gurduwara = process.env.GURUDWARA_DB;
 const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => {
   try {
     const id = event.queryStringParameters?.id;
-    const user = event.requestContext.authorizer?.user
+    const user = event.requestContext.authorizer?.user;
     if (!user) {
       return formatJSONResponse({
         statusCode: 401,
@@ -49,6 +49,7 @@ const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => 
       accommodationAvailable,
       addedGurudwaras,
       pictures,
+      bannerImage,
       additionalInfo,
       registrationNumber,
       latitude,
@@ -69,7 +70,6 @@ const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => 
       singhSabha,
       singhSabhaInfo,
       updatedDate,
-
     } = body;
     if (addedByUserId !== user.id) {
       return formatJSONResponse({
@@ -79,12 +79,13 @@ const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => 
       });
     }
     let updatedPictures = pictures;
-    if (updatedPictures && updatedPictures.length > 0) {
-      const bannerUploadResult = await uploadImagesToS3({
+    let updateBannerImage = bannerImage;
+    if (updateBannerImage && updateBannerImage.length > 0) {
+      const bannerUploadResult = await uploadSingleImagesToS3({
         id: id,
-        images: updatedPictures,
+        images: updateBannerImage,
       });
-      if (!Array.isArray(bannerUploadResult)) {
+      if (typeof bannerUploadResult === 'object' && 'statusCode' in bannerUploadResult) {
         return formatJSONResponse({
           statusCode: bannerUploadResult.statusCode || 500,
           success: false,
@@ -95,7 +96,25 @@ const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => 
               : JSON.stringify(bannerUploadResult.body),
         });
       }
-      updatedPictures = bannerUploadResult;
+      updateBannerImage = bannerUploadResult;
+    }
+    if (updatedPictures && updatedPictures.length > 0) {
+      const pictureUploadResult = await uploadImagesToS3({
+        id: id,
+        images: updatedPictures,
+      });
+      if (!Array.isArray(pictureUploadResult)) {
+        return formatJSONResponse({
+          statusCode: pictureUploadResult.statusCode || 500,
+          success: false,
+          message: 'Banner image upload failed',
+          errors:
+            typeof pictureUploadResult.body === 'string'
+              ? pictureUploadResult.body
+              : JSON.stringify(pictureUploadResult.body),
+        });
+      }
+      updatedPictures = pictureUploadResult;
     }
 
     const expressionAttributeNames = {
@@ -127,6 +146,7 @@ const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => 
       '#singhSabha': 'singhSabha',
       '#singhSabhaInfo': 'singhSabhaInfo',
       '#updatedDate': 'updatedDate',
+      '#bannerImage': 'bannerImage',
     };
 
     const expressionAttributeValues = {
@@ -157,6 +177,7 @@ const editGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEvent) => 
       ':status': status,
       ':singhSabha': singhSabha || false,
       ':singhSabhaInfo': singhSabhaInfo,
+      ':bannerImage': updateBannerImage,
       ':updatedDate': new Date().toISOString(),
     };
 

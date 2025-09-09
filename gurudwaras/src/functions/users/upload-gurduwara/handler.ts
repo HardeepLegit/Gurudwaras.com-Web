@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { GurudwaraSchemaUser } from 'src/Schema/gurudwaras'; // Check that '../../../Schema/gurudwaras.ts' exists
 import uploadImagesToS3 from 'src/common/uploadImageToS3';
 import { checkUserProfile } from 'src/middleware/userMiddleware';
+import { uploadSingleImagesToS3 } from 'src/common/uploadImageToS3';
 const region = process.env.GURUDWARA_AWS_REGION;
 const GURUDWARA_TABLE = process.env.GURUDWARA_DB as string;
 
@@ -49,6 +50,19 @@ const uploadGurudwaraHandler: APIGatewayProxyHandler = async (event: APIGatewayE
       return formatJSONResponse({
         statusCode: 400,
         message: 'Validation failed',
+        success: false,
+      });
+    }
+    const uploadBannerResult = await uploadSingleImagesToS3({
+      id: gurudwaraId,
+      images: validation.data.bannerImage,
+    });
+
+    if (typeof uploadBannerResult === 'object' && !Array.isArray(uploadBannerResult)) {
+      // If uploadSingleImagesToS3 returns an error response, return it directly
+      return formatJSONResponse({
+        statusCode: uploadBannerResult.statusCode || 500,
+        message: 'Banner image upload failed',
         success: false,
       });
     }

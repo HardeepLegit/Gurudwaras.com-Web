@@ -7,6 +7,10 @@ export default {
                 method: 'patch',
                 path: 'update-gurduwara',
                 cors: true,
+                authorizer: {
+                    name: "authorizer",     
+                    arn: process.env.COGNITO_AUTHORIZER_ARN,
+                },
             }
         }
             
