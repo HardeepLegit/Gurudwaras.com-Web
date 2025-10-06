@@ -81,6 +81,7 @@ const uploadGurudwaraHandler: APIGatewayProxyHandler = async (event: APIGatewayE
     }
 
     validation.data.pictures = uploadResult;
+    validation.data.bannerImage = uploadBannerResult as string;
     // ✅ Create DynamoDB PutItem command
     const command = new PutItemCommand({
       TableName: GURUDWARA_TABLE,

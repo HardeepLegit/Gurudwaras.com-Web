@@ -19,8 +19,8 @@ const fetchGurduwaraList: APIGatewayProxyHandler = async (event: APIGatewayEvent
   try {
     const lang = event.pathParameters?.lang || "eng"; // Default to English
     const today = new Date().toISOString();
-    const origin = event.headers?.origin || event.headers?.Origin;
-    const isSinghSabhaOrigin = origin === 'singh-sabha.gurudwara.com';
+    // const origin = event.headers?.origin || event.headers?.Origin;
+    // const isSinghSabhaOrigin = origin === 'singh-sabha.gurudwara.com';
     
     console.log("Language:", today);
     const scanParams = { TableName: GurduwaraList };
@@ -29,10 +29,10 @@ const fetchGurduwaraList: APIGatewayProxyHandler = async (event: APIGatewayEvent
     let response = data.Items || [];
     
     // Filter based on origin
-    response = response.filter(item => {
-      const singhSabha = item.singhSabha || false;
-      return isSinghSabhaOrigin ? singhSabha === true : singhSabha === false;
-    });
+    // response = response.filter(item => {
+    //   const singhSabha = item.singhSabha || false;
+    //   return isSinghSabhaOrigin ? singhSabha === true : singhSabha === false;
+    // });
 
     const getTranslatedValue = (field) => {
       if (typeof field === "object" && field !== null) {

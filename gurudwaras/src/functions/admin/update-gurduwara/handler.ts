@@ -3,7 +3,7 @@ import { middyfy } from '@libs/lambda';
 import { formatJSONResponse } from '@libs/api-gateway';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb';
-import uploadImagesToS3 from 'src/common/uploadImageToS3';
+import uploadImagesToS3, { uploadSingleImagesToS3 } from 'src/common/uploadImageToS3';
 import { checkAdminRole } from 'src/middleware/adminMiddleware';
 const region = process.env.GURUDWARA_AWS_REGION;
 const client = new DynamoDBClient({ region });
@@ -41,6 +41,7 @@ const adminUpdateGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEve
       accommodationAvailable,
       addedGurudwaras,
       pictures,
+      bannerImage,
       additionalInfo,
       registrationNumber,
       latitude,
@@ -59,9 +60,29 @@ const adminUpdateGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEve
       medicalFacilities,
       status,
       singhSabha,
+      singhSabhaInfo,
       updatedDate,
     } = body;
     let updatedPictures = pictures;
+    let updateBannerImage = bannerImage;
+    if (updateBannerImage && updateBannerImage.length > 0) {
+      const bannerUploadResult = await uploadSingleImagesToS3({
+        id: id,
+        images: updateBannerImage,
+      });
+      if (typeof bannerUploadResult === 'object' && 'statusCode' in bannerUploadResult) {
+        return formatJSONResponse({
+          statusCode: bannerUploadResult.statusCode || 500,
+          success: false,
+          message: 'Banner image upload failed',
+          errors:
+            typeof bannerUploadResult.body === 'string'
+              ? bannerUploadResult.body
+              : JSON.stringify(bannerUploadResult.body),
+        });
+      }
+      updateBannerImage = bannerUploadResult;
+    }
     if (updatedPictures && updatedPictures.length > 0) {
       const bannerUploadResult = await uploadImagesToS3({
         id: id,
@@ -107,7 +128,9 @@ const adminUpdateGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEve
       '#medicalFacilities': 'medicalFacilities',
       '#status': 'status',
       '#singhSabha': 'singhSabha',
+      '#singhSabhaInfo': 'singhSabhaInfo',
       '#updatedDate': 'updatedDate',
+      '#bannerImage': 'bannerImage',
     };
 
     const expressionAttributeValues = {
@@ -137,6 +160,8 @@ const adminUpdateGurduwara: APIGatewayProxyHandler = async (event: APIGatewayEve
       ':medicalFacilities': medicalFacilities,
       ':status': status,
       ':singhSabha': singhSabha || false,
+      ':singhSabhaInfo': singhSabhaInfo,
+      ':bannerImage': updateBannerImage,
       ':updatedDate': new Date().toISOString(),
     };
 

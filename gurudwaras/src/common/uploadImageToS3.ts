@@ -14,7 +14,7 @@ const uploadImagesToS3 = async (data: { id: any; images: any }) => {
     const { id, images } = data;
     console.log('📥 Received Data:', JSON.stringify(data, null, 2));
     // Validation
-    if (!id || !images || !Array.isArray(images) || images.length === 0) {
+    if (!id || !Array.isArray(images)) {
       return formatJSONResponse({
         statusCode: 400,
         message: 'Missing or invalid required fields: id or images array',
@@ -31,7 +31,9 @@ const uploadImagesToS3 = async (data: { id: any; images: any }) => {
       });
     }
     const imageUrls: string[] = [];
-
+    if (images.length === 0) {
+      return imageUrls; // Return empty array if no images to upload
+    }
     await Promise.all(
       images.map(async (image) => {
         // Remove data URI prefix if present
@@ -82,7 +84,7 @@ const uploadSingleImagesToS3 = async (data: { id: any; images: any }) => {
     const { id, images } = data;
     console.log('📥 Received Data:', JSON.stringify(data, null, 2));
     // Validation
-    if (!id || !images) {
+    if (!id) {
       return formatJSONResponse({
         statusCode: 400,
         message: 'Missing or invalid required fields: id or images array',
@@ -99,7 +101,9 @@ const uploadSingleImagesToS3 = async (data: { id: any; images: any }) => {
       });
     }
     let imageUrls: string = '';
-
+    if (!images && images.length === 0) {
+      return imageUrls; // Return empty array if no images to upload
+    }
     // Remove data URI prefix if present
     let decodedImage = await imageUrlToBase64(images);
     // Ensure decodedImage is a Buffer for fileTypeFromBuffer
@@ -140,5 +144,5 @@ const uploadSingleImagesToS3 = async (data: { id: any; images: any }) => {
     });
   }
 };
-export default  uploadImagesToS3  ;
+export default uploadImagesToS3;
 export { uploadSingleImagesToS3 };

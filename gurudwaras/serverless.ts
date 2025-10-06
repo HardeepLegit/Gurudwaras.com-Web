@@ -32,6 +32,7 @@ const serverlessConfiguration: AWS = {
               'dynamodb:Query',
               'dynamodb:Scan',
               'dynamodb:UpdateItem',
+              'dynamodb:DeleteItem',
             ],
             Resource: [
               'arn:aws:dynamodb:eu-north-1:761018888283:table/gurduwara_list',
