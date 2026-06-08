@@ -36,4 +36,4 @@ jobs:
 
       - name: Deploy Serverless
         working-directory: ./gurudwaras
-        run: npx serverless deploy --stage prod
+        run: npx serverless@3 deploy --stage prod
