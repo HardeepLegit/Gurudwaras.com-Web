@@ -1,0 +1,59 @@
+name: Deploy to S3 + CloudFront
+
+on:
+  push:
+    branches:
+      - prod
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Type-check
+        run: npx tsc --noEmit --project tsconfig.app.json
+        continue-on-error: true
+
+      - name: Build
+        run: npm run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-north-1
+
+      - name: Sync to S3
+        run: |
+          aws s3 sync dist/ s3://gurudwara-image --delete
+
+      - name: Invalidate CloudFront (non-hashed files only)
+        run: |
+          PATHS=$(find dist -type f -not -path "*/assets/*" | sed 's|^dist||' | tr '\n' ' ')
+          if [ -z "${PATHS// }" ]; then
+            echo "No non-hashed files found; skipping CloudFront invalidation"
+          else
+            aws cloudfront create-invalidation \
+              --distribution-id E2XPH4GRN05063 \
+              --paths $PATHS
+          fi
