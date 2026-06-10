@@ -1,7 +1,7 @@
 import { formatJSONResponse } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
 import { APIGatewayEvent, APIGatewayProxyHandler } from "aws-lambda";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, DescribeTableCommand } from "@aws-sdk/client-dynamodb";
 import { ScanCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
 const region = process.env.GURUDWARA_AWS_REGION;
@@ -9,26 +9,38 @@ const client = new DynamoDBClient({ region });
 const dynamodb = DynamoDBDocumentClient.from(client);
 const GurduwaraList = process.env.GURUDWARA_DB;
 
+const DEFAULT_PAGE_SIZE = 100;
+
 const fetchGurduwaraList: APIGatewayProxyHandler = async (event: APIGatewayEvent) => {
   try {
     const lang = event.pathParameters?.lang || "eng";
+    const queryParams = event.queryStringParameters || {};
 
-    // Paginate through all DynamoDB pages — Scan returns max 1MB per call.
-    // Without this loop, entries beyond the first page are silently dropped,
-    // causing the API to return fewer Gurudwaras than exist in the table.
-    const allItems: Record<string, any>[] = [];
-    let lastEvaluatedKey: Record<string, any> | undefined = undefined;
+    const limit = Math.min(parseInt(queryParams.limit || String(DEFAULT_PAGE_SIZE), 10), 200);
 
-    do {
-      const data = await dynamodb.send(
+    // Decode the cursor passed by the client into a DynamoDB ExclusiveStartKey.
+    // The client receives `nextKey` (base64) from a prior response and passes it
+    // back as the `lastKey` query param to continue from where it left off.
+    let exclusiveStartKey: Record<string, any> | undefined;
+    if (queryParams.lastKey) {
+      try {
+        exclusiveStartKey = JSON.parse(Buffer.from(queryParams.lastKey, "base64").toString("utf-8"));
+      } catch {
+        return formatJSONResponse({ statusCode: 400, success: false, message: "Invalid lastKey" });
+      }
+    }
+
+    const [data, tableInfo] = await Promise.all([
+      dynamodb.send(
         new ScanCommand({
           TableName: GurduwaraList,
-          ExclusiveStartKey: lastEvaluatedKey,
+          Limit: limit,
+          ExclusiveStartKey: exclusiveStartKey,
         })
-      );
-      allItems.push(...(data.Items || []));
-      lastEvaluatedKey = data.LastEvaluatedKey;
-    } while (lastEvaluatedKey);
+      ),
+      // ItemCount is updated every ~6 hours by AWS — suitable for display purposes.
+      client.send(new DescribeTableCommand({ TableName: GurduwaraList })),
+    ]);
 
     const getTranslatedValue = (field: any): string => {
       if (typeof field === "object" && field !== null) {
@@ -37,23 +49,29 @@ const fetchGurduwaraList: APIGatewayProxyHandler = async (event: APIGatewayEvent
       return field ?? "";
     };
 
-    const enrichedResponse = allItems.map((item) => {
+    const enrichedResponse = (data.Items || []).map((item) => {
       item.name = getTranslatedValue(item.name);
       item.address = getTranslatedValue(item.address);
       item.city = getTranslatedValue(item.city);
       item.state = getTranslatedValue(item.state);
       item.country = getTranslatedValue(item.country);
       item.additionalInfo = getTranslatedValue(item.additionalInfo);
-      // Events are not fetched on the list endpoint — use GET /gurduwara/{id}
-      // for full detail with upcoming events. Querying events per item caused
-      // N parallel DynamoDB calls that regularly hit the Lambda timeout.
       item.upcomingEvents = [];
       return item;
     });
 
+    // Encode the DynamoDB continuation key so the client can pass it back opaquely.
+    const nextKey = data.LastEvaluatedKey
+      ? Buffer.from(JSON.stringify(data.LastEvaluatedKey)).toString("base64")
+      : null;
+
+    const totalCount = tableInfo.Table?.ItemCount ?? 0;
+
     return formatJSONResponse({
       statusCode: 200,
       data: enrichedResponse,
+      nextKey,
+      totalCount,
       success: true,
       message: "Gurduwara list fetched successfully",
     });
