@@ -1,13 +1,15 @@
 interface Body{
-  message : string;
+  message?: string;
   data? : any;
   statusCode : number;
   success?: Boolean,
   errors?: string;
+  nextKey?: string | null;
+  totalCount?: number;
 }
 
 export const formatJSONResponse = async (response: Body, event = null) => {
-  
+
   return {
     statusCode: response.statusCode,
     body: JSON.stringify({
@@ -15,7 +17,9 @@ export const formatJSONResponse = async (response: Body, event = null) => {
         statusCode: response.statusCode,
         success: response.success,
         data : response.data,
-        errors: response.errors
+        errors: response.errors,
+        nextKey: response.nextKey,
+        totalCount: response.totalCount,
     }),
     headers: {
       "Access-Control-Allow-Origin": "*",
