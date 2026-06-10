@@ -10,8 +10,10 @@ const serverlessConfiguration: AWS = {
 
   provider: {
     name: 'aws',
+    deploymentBucket: {
+    name: 'serverless-framework-deployments-eu-north-1-ada6c825-690c'
+  },
     runtime: 'nodejs20.x',
-    profile: 'Gururdwara2',
     stage: "${opt:stage, 'dev'}",
     region: process.env.GURUDWARA_AWS_REGION as AWS['provider']['region'],
     apiGateway: {
