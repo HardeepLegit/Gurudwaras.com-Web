@@ -40,4 +40,4 @@ jobs:
 
       - name: Deploy Serverless
         working-directory: ./gurudwaras
-        run: npx serverless deploy --stage dev 
+        run: npx serverless deploy@3 --stage dev 
