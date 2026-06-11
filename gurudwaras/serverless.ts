@@ -6,7 +6,7 @@ dotenv.config();
 const serverlessConfiguration: AWS = {
   service: 'gurudwaras',
 
-  plugins: ['serverless-offline', 'serverless-dotenv-plugin'],
+  plugins: ['serverless-esbuild', 'serverless-offline', 'serverless-dotenv-plugin'],
 
   provider: {
     name: 'aws',
@@ -59,6 +59,17 @@ const serverlessConfiguration: AWS = {
           },
         ],
       },
+    },
+  },
+
+  custom: {
+    esbuild: {
+      bundle: true,
+      minify: false,
+      sourcemap: true,
+      exclude: ['aws-sdk'],
+      target: 'node20',
+      platform: 'node',
     },
   },
 
