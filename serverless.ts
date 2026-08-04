@@ -8,7 +8,7 @@ const serverlessConfiguration: AWS = {
   provider: {
     name: "aws",
     runtime: "nodejs18.x",
-    region: "us-east-1",
+    region: "eu-north-1",
     iam: {
       role: {
         statements: [
